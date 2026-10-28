@@ -1,4 +1,27 @@
 import type { Text } from './i18n'
+import { tx } from './i18n'
+import { PREMIUM_COURSES } from './premium'
+
+export type Question = { question: Text; options: Text[]; answer: number; explain: Text }
+
+// One shot of an animated video lesson. `emoji` is the main subject, `props` float in around it.
+export type Scene = {
+  emoji: string
+  props?: string[]
+  anim?: 'zoom' | 'float' | 'slide' | 'pulse' | 'spin'
+  title?: Text
+  caption: Text
+  seconds?: number
+  question?: Question
+}
+
+export type Figure = 'face' | 'eye' | 'nail' | 'body'
+
+export type BranchNode = {
+  who?: string
+  text: Text
+  choices: { text: Text; next?: string; end?: 'good' | 'bad'; feedback?: Text }[]
+}
 
 export type Step =
   | { kind: 'lesson'; title: Text; body: Text; tip?: Text; emoji: string }
@@ -7,6 +30,16 @@ export type Step =
   | { kind: 'match'; title: Text; pairs: { left: Text; right: Text }[] }
   | { kind: 'order'; title: Text; items: Text[] }
   | { kind: 'case'; title: Text; story: Text; options: { text: Text; good: boolean; feedback: Text }[] }
+  // Animated scenes stand in for footage. Set `src` (and `cues`, in seconds) to play a real video instead.
+  | { kind: 'video'; title: Text; scenes: Scene[]; src?: string; cues?: { at: number; question: Question }[] }
+  | {
+      kind: 'hotspot'
+      title: Text
+      figure: Figure
+      spots: { x: number; y: number; label: Text }[]
+      tasks: { prompt: Text; spot: number; explain: Text }[]
+    }
+  | { kind: 'branch'; title: Text; start: string; nodes: Record<string, BranchNode> }
 
 export type Course = {
   id: string
@@ -16,9 +49,13 @@ export type Course = {
   summary: Text
   minutes: number
   steps: Step[]
+  // Paid course: the first `freeSteps` steps are a free preview.
+  premium?: { eur: number; usd: number }
+  freeSteps?: number
+  certificate?: boolean
 }
 
-export const COURSES: Course[] = [
+const FREE_COURSES: Course[] = [
   {
     id: 'tipos-de-piel',
     emoji: '🌸',
@@ -32,8 +69,97 @@ export const COURSES: Course[] = [
       la: 'Aprende a reconocer cada tipo de piel y a elegir la rutina correcta en el gabinete.',
       en: 'Learn to recognise each skin type and choose the right routine in the treatment room.',
     },
-    minutes: 12,
+    minutes: 14,
     steps: [
+      {
+        kind: 'video',
+        title: tx('Vídeo: el diagnóstico en 1 minuto', 'Video: skin analysis in 1 minute', 'Video: el diagnóstico en 1 minuto'),
+        scenes: [
+          {
+            emoji: '💡',
+            props: ['🪞', '🧴'],
+            anim: 'zoom',
+            title: tx('Buena luz, piel limpia', 'Good light, clean skin'),
+            caption: tx(
+              'Antes de tocar nada, limpia la piel y obsérvala con luz natural o una lupa con luz fría.',
+              'Before touching anything, cleanse the skin and look at it in natural light or under a cold-light magnifier.',
+            ),
+          },
+          {
+            emoji: '✨',
+            props: ['👃', '🧠'],
+            anim: 'pulse',
+            title: tx('Mira la zona T', 'Check the T-zone'),
+            caption: tx(
+              'Frente, nariz y barbilla te dicen mucho: si brillan y los poros se ven abiertos, hay exceso de sebo.',
+              'Forehead, nose and chin tell you a lot: if they shine and pores look open, there is excess sebum.',
+              'Frente, nariz y mentón te dicen mucho: si brillan y los poros se ven abiertos, hay exceso de sebo.',
+            ),
+            question: {
+              question: tx('Si solo brilla la zona T, ¿qué piel sospechas?', 'If only the T-zone shines, which skin do you suspect?'),
+              options: [tx('Seca', 'Dry'), tx('Mixta', 'Combination'), tx('Sensible', 'Sensitive')],
+              answer: 1,
+              explain: tx('Brillo solo en la zona T apunta a piel mixta.', 'Shine only in the T-zone points to combination skin.'),
+            },
+          },
+          {
+            emoji: '🤏',
+            props: ['🫧'],
+            anim: 'float',
+            title: tx('Tacto y textura', 'Touch and texture'),
+            caption: tx(
+              'Pasa la yema de los dedos: aspereza o descamación indican sequedad; granitos y rugosidad, exceso de grasa.',
+              'Run your fingertips over it: roughness or flaking means dryness; bumps and uneven texture mean excess oil.',
+              'Pasa la yema de los dedos: aspereza o descamación indican resequedad; barritos y rugosidad, exceso de grasa.',
+            ),
+          },
+          {
+            emoji: '🗣️',
+            props: ['📝'],
+            anim: 'slide',
+            title: tx('Pregunta siempre', 'Always ask'),
+            caption: tx(
+              'Completa la ficha: rutina, medicación, alergias y cómo reacciona su piel al sol y a los productos nuevos.',
+              'Fill in the record card: routine, medication, allergies and how the skin reacts to sun and new products.',
+            ),
+            question: {
+              question: tx('¿Qué dato NO es necesario en la ficha?', 'Which detail is NOT needed on the record card?'),
+              options: [tx('Medicación actual', 'Current medication'), tx('Alergias', 'Allergies'), tx('Su signo del zodiaco', 'Star sign')],
+              answer: 2,
+              explain: tx('Medicación y alergias pueden cambiar el tratamiento. El zodiaco, no.', 'Medication and allergies can change the treatment. Star signs cannot.'),
+            },
+          },
+        ],
+      },
+      {
+        kind: 'hotspot',
+        title: tx('Localiza las zonas del rostro', 'Find the areas of the face'),
+        figure: 'face',
+        spots: [
+          { x: 50, y: 27, label: tx('Frente', 'Forehead') },
+          { x: 50, y: 52, label: tx('Nariz', 'Nose') },
+          { x: 50, y: 82, label: tx('Barbilla', 'Chin', 'Mentón') },
+          { x: 30, y: 60, label: tx('Mejilla', 'Cheek') },
+          { x: 72, y: 46, label: tx('Contorno de ojos', 'Eye area') },
+        ],
+        tasks: [
+          {
+            prompt: tx('¿Dónde suele brillar primero una piel mixta? Toca la frente.', 'Where does combination skin usually shine first? Tap the forehead.'),
+            spot: 0,
+            explain: tx('La frente forma parte de la zona T, con más glándulas sebáceas.', 'The forehead is part of the T-zone, with more sebaceous glands.'),
+          },
+          {
+            prompt: tx('Toca la zona donde una piel mixta suele estar normal o seca.', 'Tap the area where combination skin is usually normal or dry.'),
+            spot: 3,
+            explain: tx('Las mejillas tienen menos glándulas sebáceas que la zona T.', 'The cheeks have fewer sebaceous glands than the T-zone.'),
+          },
+          {
+            prompt: tx('Toca la zona más fina y delicada, que necesita productos específicos.', 'Tap the thinnest, most delicate area, which needs specific products.'),
+            spot: 4,
+            explain: tx('La piel del contorno de ojos es mucho más fina: usa productos específicos y sin frotar.', 'Skin around the eyes is much thinner: use dedicated products and never rub.'),
+          },
+        ],
+      },
       {
         kind: 'lesson',
         emoji: '🔍',
@@ -214,3 +340,5 @@ export const COURSES: Course[] = [
     steps: [],
   },
 ]
+
+export const COURSES: Course[] = [...FREE_COURSES, ...PREMIUM_COURSES]

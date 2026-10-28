@@ -15,6 +15,21 @@ export function tr(text: Text, locale: Locale): string {
   return text.es
 }
 
+// Short form for content files: tx('Hola', 'Hello') or tx('Cabina', 'Treatment room', 'Gabinete').
+export function tx(es: string, en: string, la?: string): Text {
+  return la === undefined ? { es, en } : { es, la, en }
+}
+
+// Spain pays in euros; LatAm and the English market in US dollars.
+export function formatPrice(price: { eur: number; usd: number }, locale: Locale): string {
+  const currency = locale === 'es-ES' ? 'EUR' : 'USD'
+  return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(
+    currency === 'EUR' ? price.eur : price.usd,
+  )
+}
+
+export const ALL_ACCESS_PRICE = { eur: 199, usd: 219 }
+
 const ui = {
   tagline: {
     es: 'Formación interactiva para esteticistas',
@@ -58,6 +73,51 @@ const ui = {
     en: 'You finished the course. Your progress is saved on this device.',
   },
   backToCourses: { es: 'Volver a los cursos', en: 'Back to courses' },
+  freeCourses: { es: 'Cursos gratuitos', en: 'Free courses' },
+  premiumCourses: { es: 'Cursos premium', en: 'Premium courses' },
+  premiumIntro: {
+    es: 'Formación profesional completa. Las primeras lecciones de cada curso son gratis: pruébalas antes de comprar.',
+    en: 'Complete professional training. The first lessons of every course are free, so try before you buy.',
+  },
+  premium: { es: 'Premium', en: 'Premium' },
+  unlocked: { es: 'Desbloqueado', en: 'Unlocked' },
+  tryFree: { es: 'Probar gratis', en: 'Try for free' },
+  freeLessons: { es: 'lecciones gratis', en: 'free lessons' },
+  withCertificate: { es: 'Con certificado', en: 'With certificate' },
+  allAccessTitle: { es: 'Pase completo', en: 'All-access pass' },
+  allAccessBody: {
+    es: 'Los 10 cursos premium y todos los que añadamos durante un año.',
+    en: 'All 10 premium courses, plus every new course we add for a year.',
+  },
+  buyAll: { es: 'Conseguir el pase', en: 'Get the pass' },
+  buyCourse: { es: 'Comprar curso', en: 'Buy course' },
+  paywallTitle: { es: 'Has terminado la parte gratuita', en: "You've finished the free preview" },
+  paywallBody: {
+    es: 'Desbloquea el curso para seguir con el resto de lecciones, los casos prácticos y el certificado.',
+    en: 'Unlock the course to continue with the remaining lessons, practical cases and the certificate.',
+  },
+  checkoutTitle: { es: 'Finalizar compra', en: 'Checkout' },
+  pay: { es: 'Pagar', en: 'Pay' },
+  demoNote: {
+    es: 'Versión de demostración: no se realiza ningún cobro. El curso se desbloquea en este dispositivo.',
+    en: 'Demo version: no payment is taken. The course is unlocked on this device.',
+  },
+  close: { es: 'Cerrar', en: 'Close' },
+  certificate: { es: 'Ver certificado', en: 'View certificate' },
+  certTitle: { es: 'Certificado de finalización', en: 'Certificate of completion' },
+  certBody: { es: 'ha completado con éxito el curso', en: 'has successfully completed the course' },
+  certName: { es: 'Escribe tu nombre', en: 'Type your name' },
+  print: { es: 'Imprimir o guardar en PDF', en: 'Print or save as PDF' },
+  play: { es: 'Reproducir', en: 'Play' },
+  pause: { es: 'Pausa', en: 'Pause' },
+  replay: { es: 'Volver a ver', en: 'Watch again' },
+  narration: { es: 'Narración', en: 'Narration' },
+  videoQuestion: { es: 'Pausa interactiva: responde para seguir', en: 'Interactive pause: answer to continue' },
+  videoDone: { es: '¡Vídeo completado!', la: '¡Video completado!', en: 'Video completed!' },
+  videoStart: { es: 'Pulsa play para empezar la lección', la: 'Presiona play para empezar la lección', en: 'Press play to start the lesson' },
+  hotspotHint: { es: 'Toca el punto correcto en la imagen', en: 'Tap the right spot on the picture' },
+  hotspotDone: { es: '¡Todo localizado! Toca los puntos para repasar.', en: 'All found! Tap the spots to review.' },
+  restart: { es: 'Empezar de nuevo', en: 'Start over' },
   footer: {
     es: 'Aula Estética · Versión de demostración',
     en: 'Aula Estética · Demo version',

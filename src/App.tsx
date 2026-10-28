@@ -1,26 +1,18 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { COURSES, type Course, type Step } from './courses'
-import { LOCALES, t, tr, type Locale } from './i18n'
+import { ALL_ACCESS_PRICE, formatPrice, LOCALES, t, tr, type Locale } from './i18n'
+import { Branch, Hotspot, VideoLesson } from './interactive'
+import { load, save } from './storage'
 
 type Progress = { points: number; courses: Record<string, { step: number; done: boolean }> }
 
 const EMPTY: Progress = { points: 0, courses: {} }
 
-function load<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key)
-    return raw ? (JSON.parse(raw) as T) : fallback
-  } catch {
-    return fallback
-  }
-}
+// Course ids bought on this device, or 'all' for the all-access pass.
+type Purchases = string[]
 
-function save(key: string, value: unknown) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // Storage may be blocked (private mode); progress just won't persist.
-  }
+function isUnlocked(course: Course, purchases: Purchases) {
+  return !course.premium || purchases.includes('all') || purchases.includes(course.id)
 }
 
 function detectLocale(): Locale {
@@ -43,12 +35,15 @@ export default function App() {
   const [locale, setLocale] = useState<Locale>(() => load('locale', detectLocale()))
   const [progress, setProgress] = useState<Progress>(() => load('progress', EMPTY))
   const [courseId, setCourseId] = useState<string | null>(null)
+  const [purchases, setPurchases] = useState<Purchases>(() => load('purchases', []))
+  const [checkout, setCheckout] = useState<string | null>(null)
 
   useEffect(() => {
     save('locale', locale)
     document.documentElement.lang = locale
   }, [locale])
   useEffect(() => save('progress', progress), [progress])
+  useEffect(() => save('purchases', purchases), [purchases])
 
   const course = COURSES.find((c) => c.id === courseId)
 
@@ -81,6 +76,8 @@ export default function App() {
             course={course}
             locale={locale}
             startAt={progress.courses[course.id]?.done ? 0 : (progress.courses[course.id]?.step ?? 0)}
+            unlocked={isUnlocked(course, purchases)}
+            onBuy={() => setCheckout(course.id)}
             onExit={() => setCourseId(null)}
             onProgress={(step, done, gained) =>
               setProgress((p) => ({
@@ -90,16 +87,93 @@ export default function App() {
             }
           />
         ) : (
-          <Catalog locale={locale} progress={progress} onOpen={setCourseId} />
+          <Catalog locale={locale} progress={progress} purchases={purchases} onOpen={setCourseId} onBuy={setCheckout} />
         )}
       </main>
+
+      {checkout && (
+        <Checkout
+          target={checkout}
+          locale={locale}
+          onClose={() => setCheckout(null)}
+          onPaid={() => {
+            setPurchases((p) => [...new Set([...p, checkout])])
+            setCheckout(null)
+          }}
+        />
+      )}
 
       <footer>{t('footer', locale)}</footer>
     </div>
   )
 }
 
-function Catalog({ locale, progress, onOpen }: { locale: Locale; progress: Progress; onOpen: (id: string) => void }) {
+function Catalog({
+  locale,
+  progress,
+  purchases,
+  onOpen,
+  onBuy,
+}: {
+  locale: Locale
+  progress: Progress
+  purchases: Purchases
+  onOpen: (id: string) => void
+  onBuy: (target: string) => void
+}) {
+  const card = (c: Course) => {
+    const state = progress.courses[c.id]
+    const available = c.steps.length > 0
+    const unlocked = isUnlocked(c, purchases)
+    const pct = state?.done ? 100 : available ? Math.round(((state?.step ?? 0) / c.steps.length) * 100) : 0
+    const label = state?.done
+      ? t('review', locale)
+      : state?.step
+        ? t('continue', locale)
+        : unlocked
+          ? t('start', locale)
+          : t('tryFree', locale)
+    return (
+      <article key={c.id} className="card" style={{ '--accent': c.color } as CSSProperties}>
+        <div className="card-top">
+          <div className="card-emoji">{c.emoji}</div>
+          {c.premium && (
+            <span className={`badge ${unlocked ? 'owned' : ''}`}>
+              {unlocked ? `✓ ${t('unlocked', locale)}` : `★ ${t('premium', locale)} · ${formatPrice(c.premium, locale)}`}
+            </span>
+          )}
+        </div>
+        <h3>{tr(c.title, locale)}</h3>
+        <p>{tr(c.summary, locale)}</p>
+        <p className="meta">
+          {c.minutes} {t('minutes', locale)}
+          {available && ` · ${c.steps.length} ${t('steps', locale)}`}
+          {c.premium && !unlocked && ` · ${c.freeSteps ?? 0} ${t('freeLessons', locale)}`}
+          {c.certificate && ` · 🎓 ${t('withCertificate', locale)}`}
+        </p>
+        {available && (
+          <div className="bar">
+            <div style={{ width: `${pct}%` }} />
+          </div>
+        )}
+        <div className="card-actions">
+          <button className="primary" disabled={!available} onClick={() => onOpen(c.id)}>
+            {available ? label : t('soon', locale)}
+          </button>
+          {c.premium && !unlocked && (
+            <button className="secondary" onClick={() => onBuy(c.id)}>
+              {t('buyCourse', locale)}
+            </button>
+          )}
+        </div>
+      </article>
+    )
+  }
+
+  const free = COURSES.filter((c) => !c.premium)
+  const premium = COURSES.filter((c) => c.premium)
+  const hasAll = purchases.includes('all')
+
   return (
     <>
       <section className="hero">
@@ -107,35 +181,93 @@ function Catalog({ locale, progress, onOpen }: { locale: Locale; progress: Progr
         <h1>{t('heroTitle', locale)}</h1>
         <p>{t('heroBody', locale)}</p>
       </section>
-      <h2>{t('courses', locale)}</h2>
-      <div className="grid">
-        {COURSES.map((c) => {
-          const state = progress.courses[c.id]
-          const available = c.steps.length > 0
-          const pct = state?.done ? 100 : available ? Math.round(((state?.step ?? 0) / c.steps.length) * 100) : 0
-          const label = state?.done ? t('review', locale) : state?.step ? t('continue', locale) : t('start', locale)
-          return (
-            <article key={c.id} className="card" style={{ '--accent': c.color } as CSSProperties}>
-              <div className="card-emoji">{c.emoji}</div>
-              <h3>{tr(c.title, locale)}</h3>
-              <p>{tr(c.summary, locale)}</p>
-              <p className="meta">
-                {c.minutes} {t('minutes', locale)}
-                {available && ` · ${c.steps.length} ${t('steps', locale)}`}
-              </p>
-              {available && (
-                <div className="bar">
-                  <div style={{ width: `${pct}%` }} />
-                </div>
-              )}
-              <button className="primary" disabled={!available} onClick={() => onOpen(c.id)}>
-                {available ? label : t('soon', locale)}
-              </button>
-            </article>
-          )
-        })}
-      </div>
+      <h2>{t('premiumCourses', locale)}</h2>
+      <p className="section-intro">{t('premiumIntro', locale)}</p>
+      {!hasAll && (
+        <div className="pass">
+          <div>
+            <strong>🎟️ {t('allAccessTitle', locale)} · {formatPrice(ALL_ACCESS_PRICE, locale)}</strong>
+            <p>{t('allAccessBody', locale)}</p>
+          </div>
+          <button className="primary" onClick={() => onBuy('all')}>
+            {t('buyAll', locale)}
+          </button>
+        </div>
+      )}
+      <div className="grid">{premium.map(card)}</div>
+      <h2 className="section-gap">{t('freeCourses', locale)}</h2>
+      <div className="grid">{free.map(card)}</div>
     </>
+  )
+}
+
+function Checkout({
+  target,
+  locale,
+  onClose,
+  onPaid,
+}: {
+  target: string
+  locale: Locale
+  onClose: () => void
+  onPaid: () => void
+}) {
+  const course = COURSES.find((c) => c.id === target)
+  const title = course ? tr(course.title, locale) : t('allAccessTitle', locale)
+  const price = course?.premium ?? ALL_ACCESS_PRICE
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        <h2>{t('checkoutTitle', locale)}</h2>
+        <div className="checkout-line">
+          <span>
+            {course?.emoji ?? '🎟️'} {title}
+          </span>
+          <strong>{formatPrice(price, locale)}</strong>
+        </div>
+        {!course && <p className="hint">{t('allAccessBody', locale)}</p>}
+        <p className="demo-note">ℹ️ {t('demoNote', locale)}</p>
+        <div className="actions">
+          <button className="ghost" onClick={onClose}>
+            {t('close', locale)}
+          </button>
+          <button className="primary" onClick={onPaid}>
+            {t('pay', locale)} {formatPrice(price, locale)}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Certificate({ course, locale }: { course: Course; locale: Locale }) {
+  const [name, setName] = useState(() => load('certName', ''))
+  useEffect(() => save('certName', name), [name])
+  const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(new Date())
+  return (
+    <div className="certificate-wrap">
+      <input
+        className="name-input"
+        placeholder={t('certName', locale)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <div className="certificate">
+        <div className="cert-logo">💧 Aula Estética</div>
+        <p className="cert-kicker">{t('certTitle', locale)}</p>
+        <h2 className="cert-name">{name || '—'}</h2>
+        <p>{t('certBody', locale)}</p>
+        <h3>
+          {course.emoji} {tr(course.title, locale)}
+        </h3>
+        <p className="cert-meta">
+          {course.minutes} {t('minutes', locale)} · {date}
+        </p>
+      </div>
+      <button className="primary" disabled={!name} onClick={() => window.print()}>
+        🖨️ {t('print', locale)}
+      </button>
+    </div>
   )
 }
 
@@ -143,24 +275,30 @@ function Player({
   course,
   locale,
   startAt,
+  unlocked,
+  onBuy,
   onExit,
   onProgress,
 }: {
   course: Course
   locale: Locale
   startAt: number
+  unlocked: boolean
+  onBuy: () => void
   onExit: () => void
   onProgress: (step: number, done: boolean, gained: number) => void
 }) {
   const [index, setIndex] = useState(startAt)
   const [solved, setSolved] = useState(false)
+  const [showCert, setShowCert] = useState(false)
   const finished = index >= course.steps.length
   const step = course.steps[index]
   const needsSolving = step && step.kind !== 'lesson' && step.kind !== 'flashcards'
+  const locked = !unlocked && index >= (course.freeSteps ?? 0)
 
   const next = () => {
     const nextIndex = index + 1
-    onProgress(nextIndex, nextIndex >= course.steps.length, needsSolving ? 10 : 2)
+    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'video' ? 15 : needsSolving ? 10 : 2)
     setIndex(nextIndex)
     setSolved(false)
   }
@@ -178,12 +316,36 @@ function Player({
 
       {finished ? (
         <div className="panel center">
-          <div className="big-emoji">🎉</div>
-          <h2>{t('finishTitle', locale)}</h2>
-          <p>{t('finishBody', locale)}</p>
-          <button className="primary" onClick={onExit}>
-            {t('backToCourses', locale)}
-          </button>
+          {showCert ? (
+            <Certificate course={course} locale={locale} />
+          ) : (
+            <>
+              <div className="big-emoji">🎉</div>
+              <h2>{t('finishTitle', locale)}</h2>
+              <p>{t('finishBody', locale)}</p>
+            </>
+          )}
+          <div className="center-actions">
+            {course.certificate && !showCert && (
+              <button className="secondary" onClick={() => setShowCert(true)}>
+                🎓 {t('certificate', locale)}
+              </button>
+            )}
+            <button className="primary" onClick={onExit}>
+              {t('backToCourses', locale)}
+            </button>
+          </div>
+        </div>
+      ) : locked ? (
+        <div className="panel center">
+          <div className="big-emoji">🔒</div>
+          <h2>{t('paywallTitle', locale)}</h2>
+          <p>{t('paywallBody', locale)}</p>
+          {course.premium && (
+            <button className="primary" onClick={onBuy}>
+              {t('buyCourse', locale)} · {formatPrice(course.premium, locale)}
+            </button>
+          )}
         </div>
       ) : (
         <div className="panel">
@@ -220,6 +382,12 @@ function StepView({ step, locale, onSolved }: { step: Step; locale: Locale; onSo
       return <Order step={step} locale={locale} onSolved={onSolved} />
     case 'case':
       return <Case step={step} locale={locale} onSolved={onSolved} />
+    case 'video':
+      return <VideoLesson step={step} locale={locale} onSolved={onSolved} />
+    case 'hotspot':
+      return <Hotspot step={step} locale={locale} onSolved={onSolved} />
+    case 'branch':
+      return <Branch step={step} locale={locale} onSolved={onSolved} />
   }
 }
 
