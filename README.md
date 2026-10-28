@@ -31,3 +31,16 @@ Para usar un vídeo real en una lección `video`, añade `src: '/videos/archivo.
 ## Despliegue
 
 El proyecto está preparado para Vercel (`vercel.json`): importa el repositorio en https://vercel.com/new y Vercel detecta Vite automáticamente.
+
+## Funciones premium y servicios externos
+
+La app funciona entera en modo demostración. Para activar cada servicio real, añade estas variables en Vercel (Project → Settings → Environment Variables) y vuelve a desplegar:
+
+| Función | Variables | Qué hace |
+|---|---|---|
+| Analizador de piel, pre-revisión de prácticas y tutor con IA | `ANTHROPIC_API_KEY` (opcional `ANTHROPIC_MODEL`) | `api/ai.ts` llama a Claude. Sin clave, la app muestra resultados de ejemplo. |
+| Cobros con Stripe | `STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_PRICE_ALL_ACCESS` y `STRIPE_PRICE_COURSE_<ID>` (p. ej. `STRIPE_PRICE_COURSE_MICROBLADING`) | `api/checkout.ts` crea la sesión de pago. Sin claves, la compra se simula. |
+| Clases en directo | `VITE_LIVE_URL` | Enlace de Zoom, Meet o YouTube Live que aparece 15 minutos antes. |
+| Plan academias | `VITE_CONTACT_EMAIL` | Email que recibe las peticiones de presupuesto. |
+
+Pendiente para producción: cuentas de usuario y base de datos (por ejemplo Supabase) para que el foro, la bolsa de empleo, el ranking, las correcciones de expertas y los certificados se compartan entre dispositivos, y un webhook de Stripe que confirme los pagos en el servidor.

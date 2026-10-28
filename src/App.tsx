@@ -3,15 +3,21 @@ import { COURSES, type Course, type Step } from './courses'
 import { ALL_ACCESS_PRICE, formatPrice, LOCALES, t, tr, type Locale } from './i18n'
 import { Branch, Hotspot, VideoLesson } from './interactive'
 import { load, save } from './storage'
-
-type Progress = { points: number; courses: Record<string, { step: number; done: boolean }> }
+import { startCheckout } from './services'
+import { AppContext, today, type AppState, type Plan, type Progress } from './state'
+import type { CertData } from './services'
+import { IssueCertificate, VerifyPage } from './features/certificates'
+import { AiPage } from './features/ai'
+import { ToolsPage } from './features/tools'
+import { CommunityPage } from './features/community'
+import { LivePage } from './features/live'
+import { PracticePage } from './features/practice'
+import { ProfilePage } from './features/profile'
+import { PlansPage } from './features/plans'
 
 const EMPTY: Progress = { points: 0, courses: {} }
 
-// Course ids bought on this device, or 'all' for the all-access pass.
-type Purchases = string[]
-
-function isUnlocked(course: Course, purchases: Purchases) {
+function isUnlocked(course: Course, purchases: string[]) {
   return !course.premium || purchases.includes('all') || purchases.includes(course.id)
 }
 
@@ -31,12 +37,30 @@ function shuffle<T>(items: T[]): T[] {
   return copy
 }
 
+const NAV = [
+  { id: 'cursos', emoji: '🎓', label: { es: 'Cursos', en: 'Courses' } },
+  { id: 'ia', emoji: '🤖', label: { es: 'IA', en: 'AI' } },
+  { id: 'herramientas', emoji: '🧰', label: { es: 'Herramientas', en: 'Tools' } },
+  { id: 'comunidad', emoji: '👥', label: { es: 'Comunidad', en: 'Community' } },
+  { id: 'directo', emoji: '📺', label: { es: 'Directo', en: 'Live' } },
+  { id: 'practicas', emoji: '📸', label: { es: 'Prácticas', en: 'Practice' } },
+  { id: 'perfil', emoji: '🏆', label: { es: 'Mi progreso', en: 'Progress' } },
+  { id: 'planes', emoji: '💎', label: { es: 'Planes', en: 'Plans' } },
+]
+
+function readRoute(): string {
+  return location.hash.replace(/^#\/?/, '') || 'cursos'
+}
+
 export default function App() {
   const [locale, setLocale] = useState<Locale>(() => load('locale', detectLocale()))
   const [progress, setProgress] = useState<Progress>(() => load('progress', EMPTY))
   const [courseId, setCourseId] = useState<string | null>(null)
-  const [purchases, setPurchases] = useState<Purchases>(() => load('purchases', []))
+  const [purchases, setPurchases] = useState<string[]>(() => load('purchases', []))
+  const [plan, setPlan] = useState<Plan>(() => load('plan', null))
+  const [certs, setCerts] = useState<CertData[]>(() => load('certs', []))
   const [checkout, setCheckout] = useState<string | null>(null)
+  const [route, setRoute] = useState(readRoute)
 
   useEffect(() => {
     save('locale', locale)
@@ -44,67 +68,133 @@ export default function App() {
   }, [locale])
   useEffect(() => save('progress', progress), [progress])
   useEffect(() => save('purchases', purchases), [purchases])
+  useEffect(() => save('plan', plan), [plan])
+  useEffect(() => save('certs', certs), [certs])
+  useEffect(() => {
+    const onHash = () => {
+      setRoute(readRoute())
+      setCourseId(null)
+      window.scrollTo(0, 0)
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // Back from Stripe Checkout. The real unlock should come from a Stripe webhook once accounts exist.
+  useEffect(() => {
+    if (!route.startsWith('pago-ok')) return
+    const product = new URLSearchParams(route.split('?')[1]).get('product')
+    if (product === 'monthly' || product === 'yearly') setPlan(product)
+    else if (product) setPurchases((p) => [...new Set([...p, product])])
+    location.hash = product === 'monthly' || product === 'yearly' ? '#/perfil' : '#/cursos'
+  }, [route])
+
+  const unlock = (product: string) => setPurchases((p) => [...new Set([...p, product])])
+  const state: AppState = {
+    locale,
+    progress,
+    purchases,
+    plan,
+    pro: plan !== null,
+    certs,
+    addActivity: (kind, points) =>
+      setProgress((p) => ({ ...p, points: p.points + points, log: [...(p.log ?? []), { d: today(), k: kind, p: points }].slice(-500) })),
+    addCert: (cert) => setCerts((list) => [...list.filter((c) => c.c !== cert.c), cert]),
+    setPlan,
+    unlock,
+    go: (r) => {
+      location.hash = `#/${r}`
+    },
+  }
 
   const course = COURSES.find((c) => c.id === courseId)
+  const page = route.split(/[/?]/)[0]
+
+  let content
+  if (page === 'verificar') content = <VerifyPage payload={route.slice('verificar/'.length)} />
+  else if (course)
+    content = (
+      <Player
+        key={course.id}
+        course={course}
+        locale={locale}
+        startAt={progress.courses[course.id]?.done ? 0 : (progress.courses[course.id]?.step ?? 0)}
+        unlocked={isUnlocked(course, purchases) || plan !== null}
+        onBuy={() => setCheckout(course.id)}
+        onExit={() => setCourseId(null)}
+        onProgress={(step, done, gained, kind) =>
+          setProgress((p) => ({
+            points: p.points + gained,
+            courses: { ...p.courses, [course.id]: { step, done: done || !!p.courses[course.id]?.done } },
+            log: [...(p.log ?? []), { d: today(), k: kind, p: gained }].slice(-500),
+          }))
+        }
+      />
+    )
+  else if (page === 'ia') content = <AiPage />
+  else if (page === 'herramientas') content = <ToolsPage />
+  else if (page === 'comunidad') content = <CommunityPage />
+  else if (page === 'directo') content = <LivePage />
+  else if (page === 'practicas') content = <PracticePage />
+  else if (page === 'perfil') content = <ProfilePage />
+  else if (page === 'planes') content = <PlansPage />
+  else
+    content = (
+      <Catalog
+        locale={locale}
+        progress={progress}
+        purchases={plan ? [...purchases, 'all'] : purchases}
+        onOpen={setCourseId}
+        onBuy={setCheckout}
+      />
+    )
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <button className="brand" onClick={() => setCourseId(null)}>
-          <span className="logo">💧</span> Aula Estética
-        </button>
-        <div className="topbar-right">
-          <span className="points">⭐ {progress.points} {t('points', locale)}</span>
-          <select
-            aria-label="Idioma / Language"
-            value={locale}
-            onChange={(e) => setLocale(e.target.value as Locale)}
-          >
-            {LOCALES.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.label}
-              </option>
+    <AppContext.Provider value={state}>
+      <div className="app">
+        <header className="topbar">
+          <button className="brand" onClick={() => state.go('cursos')}>
+            <span className="logo">💧</span> Aula Estética
+          </button>
+          <div className="topbar-right">
+            {plan && <span className="badge">💎 Pro</span>}
+            <span className="points">⭐ {progress.points} {t('points', locale)}</span>
+            <select aria-label="Idioma / Language" value={locale} onChange={(e) => setLocale(e.target.value as Locale)}>
+              {LOCALES.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </header>
+        {page !== 'verificar' && (
+          <nav className="nav">
+            {NAV.map((n) => (
+              <a key={n.id} href={`#/${n.id}`} className={`nav-item ${page === n.id || (n.id === 'cursos' && !NAV.some((x) => x.id === page)) ? 'active' : ''}`}>
+                <span>{n.emoji}</span> {tr(n.label, locale)}
+              </a>
             ))}
-          </select>
-        </div>
-      </header>
-
-      <main>
-        {course ? (
-          <Player
-            key={course.id}
-            course={course}
-            locale={locale}
-            startAt={progress.courses[course.id]?.done ? 0 : (progress.courses[course.id]?.step ?? 0)}
-            unlocked={isUnlocked(course, purchases)}
-            onBuy={() => setCheckout(course.id)}
-            onExit={() => setCourseId(null)}
-            onProgress={(step, done, gained) =>
-              setProgress((p) => ({
-                points: p.points + gained,
-                courses: { ...p.courses, [course.id]: { step, done: done || !!p.courses[course.id]?.done } },
-              }))
-            }
-          />
-        ) : (
-          <Catalog locale={locale} progress={progress} purchases={purchases} onOpen={setCourseId} onBuy={setCheckout} />
+          </nav>
         )}
-      </main>
 
-      {checkout && (
-        <Checkout
-          target={checkout}
-          locale={locale}
-          onClose={() => setCheckout(null)}
-          onPaid={() => {
-            setPurchases((p) => [...new Set([...p, checkout])])
-            setCheckout(null)
-          }}
-        />
-      )}
+        <main>{content}</main>
 
-      <footer>{t('footer', locale)}</footer>
-    </div>
+        {checkout && (
+          <Checkout
+            target={checkout}
+            locale={locale}
+            onClose={() => setCheckout(null)}
+            onPaid={() => {
+              unlock(checkout)
+              setCheckout(null)
+            }}
+          />
+        )}
+
+        <footer>{t('footer', locale)}</footer>
+      </div>
+    </AppContext.Provider>
   )
 }
 
@@ -117,7 +207,7 @@ function Catalog({
 }: {
   locale: Locale
   progress: Progress
-  purchases: Purchases
+  purchases: string[]
   onOpen: (id: string) => void
   onBuy: (target: string) => void
 }) {
@@ -231,42 +321,16 @@ function Checkout({
           <button className="ghost" onClick={onClose}>
             {t('close', locale)}
           </button>
-          <button className="primary" onClick={onPaid}>
+          <button
+            className="primary"
+            onClick={async () => {
+              if (!(await startCheckout(target, locale))) onPaid()
+            }}
+          >
             {t('pay', locale)} {formatPrice(price, locale)}
           </button>
         </div>
       </div>
-    </div>
-  )
-}
-
-function Certificate({ course, locale }: { course: Course; locale: Locale }) {
-  const [name, setName] = useState(() => load('certName', ''))
-  useEffect(() => save('certName', name), [name])
-  const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(new Date())
-  return (
-    <div className="certificate-wrap">
-      <input
-        className="name-input"
-        placeholder={t('certName', locale)}
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <div className="certificate">
-        <div className="cert-logo">💧 Aula Estética</div>
-        <p className="cert-kicker">{t('certTitle', locale)}</p>
-        <h2 className="cert-name">{name || '—'}</h2>
-        <p>{t('certBody', locale)}</p>
-        <h3>
-          {course.emoji} {tr(course.title, locale)}
-        </h3>
-        <p className="cert-meta">
-          {course.minutes} {t('minutes', locale)} · {date}
-        </p>
-      </div>
-      <button className="primary" disabled={!name} onClick={() => window.print()}>
-        🖨️ {t('print', locale)}
-      </button>
     </div>
   )
 }
@@ -286,7 +350,7 @@ function Player({
   unlocked: boolean
   onBuy: () => void
   onExit: () => void
-  onProgress: (step: number, done: boolean, gained: number) => void
+  onProgress: (step: number, done: boolean, gained: number, kind: string) => void
 }) {
   const [index, setIndex] = useState(startAt)
   const [solved, setSolved] = useState(false)
@@ -298,7 +362,7 @@ function Player({
 
   const next = () => {
     const nextIndex = index + 1
-    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'video' ? 15 : needsSolving ? 10 : 2)
+    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'video' ? 15 : needsSolving ? 10 : 2, step.kind)
     setIndex(nextIndex)
     setSolved(false)
   }
@@ -317,7 +381,7 @@ function Player({
       {finished ? (
         <div className="panel center">
           {showCert ? (
-            <Certificate course={course} locale={locale} />
+            <IssueCertificate course={course} />
           ) : (
             <>
               <div className="big-emoji">🎉</div>

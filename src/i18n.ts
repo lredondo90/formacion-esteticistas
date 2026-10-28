@@ -129,3 +129,8 @@ export type UiKey = keyof typeof ui
 export function t(key: UiKey, locale: Locale): string {
   return tr(ui[key], locale)
 }
+
+// Inline translations for feature screens: const s = sayer(locale); s('Hola', 'Hello').
+export function sayer(locale: Locale) {
+  return (es: string, en: string, la?: string) => tr(tx(es, en, la), locale)
+}
