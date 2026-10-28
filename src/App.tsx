@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { COURSES, type Course, type Step } from './courses'
 import { ALL_ACCESS_PRICE, formatPrice, LOCALES, t, tr, type Locale } from './i18n'
 import { Branch, Hotspot, VideoLesson } from './interactive'
+import { BrowLab } from './labs/BrowLab'
 import { load, save } from './storage'
 import { startCheckout } from './services'
 import { AppContext, today, type AppState, type Plan, type Progress } from './state'
@@ -362,7 +363,7 @@ function Player({
 
   const next = () => {
     const nextIndex = index + 1
-    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'video' ? 15 : needsSolving ? 10 : 2, step.kind)
+    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'lab' ? 25 : step.kind === 'video' ? 15 : needsSolving ? 10 : 2, step.kind)
     setIndex(nextIndex)
     setSolved(false)
   }
@@ -452,6 +453,8 @@ function StepView({ step, locale, onSolved }: { step: Step; locale: Locale; onSo
       return <Hotspot step={step} locale={locale} onSolved={onSolved} />
     case 'branch':
       return <Branch step={step} locale={locale} onSolved={onSolved} />
+    case 'lab':
+      return <BrowLab locale={locale} onSolved={onSolved} />
   }
 }
 

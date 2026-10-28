@@ -40,6 +40,8 @@ export type Step =
       tasks: { prompt: Text; spot: number; explain: Text }[]
     }
   | { kind: 'branch'; title: Text; start: string; nodes: Record<string, BranchNode> }
+  // Hands-on guided practice: learn on an animated drawing, then do it yourself.
+  | { kind: 'lab'; lab: 'brows'; title: Text }
 
 export type Course = {
   id: string
