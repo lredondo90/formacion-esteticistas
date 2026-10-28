@@ -1,0 +1,216 @@
+import type { Text } from './i18n'
+
+export type Step =
+  | { kind: 'lesson'; title: Text; body: Text; tip?: Text; emoji: string }
+  | { kind: 'flashcards'; title: Text; cards: { front: Text; back: Text }[] }
+  | { kind: 'quiz'; question: Text; options: Text[]; answer: number; explain: Text }
+  | { kind: 'match'; title: Text; pairs: { left: Text; right: Text }[] }
+  | { kind: 'order'; title: Text; items: Text[] }
+  | { kind: 'case'; title: Text; story: Text; options: { text: Text; good: boolean; feedback: Text }[] }
+
+export type Course = {
+  id: string
+  emoji: string
+  color: string
+  title: Text
+  summary: Text
+  minutes: number
+  steps: Step[]
+}
+
+export const COURSES: Course[] = [
+  {
+    id: 'tipos-de-piel',
+    emoji: '🌸',
+    color: '#c2577a',
+    title: {
+      es: 'Diagnóstico facial: tipos de piel',
+      en: 'Facial analysis: skin types',
+    },
+    summary: {
+      es: 'Aprende a reconocer cada tipo de piel y a elegir la rutina correcta en cabina.',
+      la: 'Aprende a reconocer cada tipo de piel y a elegir la rutina correcta en el gabinete.',
+      en: 'Learn to recognise each skin type and choose the right routine in the treatment room.',
+    },
+    minutes: 12,
+    steps: [
+      {
+        kind: 'lesson',
+        emoji: '🔍',
+        title: { es: 'Por qué empezar por el diagnóstico', en: 'Why start with analysis' },
+        body: {
+          es: 'Un buen tratamiento empieza mirando la piel con buena luz, la cara limpia y sin maquillaje. Observa el brillo, el tamaño de los poros, la textura y la sensibilidad. Pregunta a la clienta por su rutina y por los productos que usa.',
+          la: 'Un buen tratamiento empieza mirando la piel con buena luz, el rostro limpio y sin maquillaje. Observa el brillo, el tamaño de los poros, la textura y la sensibilidad. Pregúntale a tu clienta por su rutina y por los productos que usa.',
+          en: 'A good treatment starts by looking at the skin in good light, with the face cleansed and make-up free. Look at shine, pore size, texture and sensitivity. Ask the client about her routine and the products she uses.',
+        },
+        tip: {
+          es: 'Truco: espera 20-30 minutos después de limpiar para ver cómo se comporta la piel de verdad.',
+          en: 'Tip: wait 20–30 minutes after cleansing to see how the skin really behaves.',
+        },
+      },
+      {
+        kind: 'flashcards',
+        title: { es: 'Los 5 tipos de piel', en: 'The 5 skin types' },
+        cards: [
+          {
+            front: { es: 'Piel normal', en: 'Normal skin' },
+            back: {
+              es: 'Equilibrada, poros finos, textura uniforme, ni brillo ni tirantez.',
+              en: 'Balanced, fine pores, even texture, neither shiny nor tight.',
+            },
+          },
+          {
+            front: { es: 'Piel seca', en: 'Dry skin' },
+            back: {
+              es: 'Poca grasa, sensación de tirantez, puede descamarse y marcar líneas finas.',
+              en: 'Low oil, feels tight, may flake and show fine lines.',
+            },
+          },
+          {
+            front: { es: 'Piel grasa', en: 'Oily skin' },
+            back: {
+              es: 'Brillo generalizado, poros dilatados, tendencia a granos y puntos negros.',
+              la: 'Brillo generalizado, poros dilatados, tendencia a barros y espinillas.',
+              en: 'Overall shine, enlarged pores, prone to breakouts and blackheads.',
+            },
+          },
+          {
+            front: { es: 'Piel mixta', en: 'Combination skin' },
+            back: {
+              es: 'Zona T (frente, nariz, barbilla) grasa y mejillas normales o secas.',
+              la: 'Zona T (frente, nariz, mentón) grasa y mejillas normales o secas.',
+              en: 'Oily T-zone (forehead, nose, chin) with normal or dry cheeks.',
+            },
+          },
+          {
+            front: { es: 'Piel sensible', en: 'Sensitive skin' },
+            back: {
+              es: 'Se enrojece con facilidad, pica o arde con productos nuevos o cambios de temperatura.',
+              en: 'Reddens easily, stings or burns with new products or temperature changes.',
+            },
+          },
+        ],
+      },
+      {
+        kind: 'quiz',
+        question: {
+          es: 'Una clienta tiene brillo en la frente y la nariz, pero las mejillas le tiran. ¿Qué tipo de piel es?',
+          en: 'A client is shiny on the forehead and nose, but her cheeks feel tight. Which skin type is it?',
+        },
+        options: [
+          { es: 'Grasa', en: 'Oily' },
+          { es: 'Mixta', en: 'Combination' },
+          { es: 'Seca', en: 'Dry' },
+          { es: 'Normal', en: 'Normal' },
+        ],
+        answer: 1,
+        explain: {
+          es: 'Grasa en la zona T y sequedad en las mejillas es la señal clásica de la piel mixta.',
+          en: 'Oil in the T-zone and dryness on the cheeks is the classic sign of combination skin.',
+        },
+      },
+      {
+        kind: 'match',
+        title: { es: 'Une cada piel con su activo estrella', en: 'Match each skin with its hero ingredient' },
+        pairs: [
+          { left: { es: 'Seca', en: 'Dry' }, right: { es: 'Ácido hialurónico y ceramidas', en: 'Hyaluronic acid and ceramides' } },
+          { left: { es: 'Grasa', en: 'Oily' }, right: { es: 'Ácido salicílico', en: 'Salicylic acid' } },
+          { left: { es: 'Sensible', en: 'Sensitive' }, right: { es: 'Centella asiática', en: 'Centella asiatica' } },
+          { left: { es: 'Apagada', en: 'Dull' }, right: { es: 'Vitamina C', en: 'Vitamin C' } },
+        ],
+      },
+      {
+        kind: 'order',
+        title: { es: 'Ordena los pasos de una limpieza facial básica', en: 'Put the steps of a basic facial cleanse in order' },
+        items: [
+          { es: 'Desmaquillar ojos y labios', en: 'Remove eye and lip make-up' },
+          { es: 'Limpieza con el producto adecuado', en: 'Cleanse with the right product' },
+          { es: 'Tonificar', en: 'Tone' },
+          { es: 'Exfoliar', en: 'Exfoliate' },
+          { es: 'Mascarilla', en: 'Mask' },
+          {
+            es: 'Hidratación y protección solar',
+            la: 'Humectación y protector solar',
+            en: 'Moisturise and apply sunscreen',
+          },
+        ],
+      },
+      {
+        kind: 'case',
+        title: { es: 'Caso real de cabina', la: 'Caso real de gabinete', en: 'Real treatment-room case' },
+        story: {
+          es: 'Lucía, 34 años, viene por primera vez. Nota la piel tirante y roja después de usar un exfoliante nuevo que compró en internet. ¿Qué haces?',
+          la: 'Valentina, 34 años, viene por primera vez. Siente la piel tirante y roja después de usar un exfoliante nuevo que compró por internet. ¿Qué haces?',
+          en: 'Lucy, 34, is a first-time client. Her skin feels tight and red after using a new scrub she bought online. What do you do?',
+        },
+        options: [
+          {
+            text: {
+              es: 'Hacer un peeling para "renovar" la piel',
+              en: 'Do a peel to "renew" the skin',
+            },
+            good: false,
+            feedback: {
+              es: 'Cuidado: la barrera cutánea está alterada y un peeling la irritaría todavía más.',
+              en: 'Careful: the skin barrier is compromised and a peel would irritate it even more.',
+            },
+          },
+          {
+            text: {
+              es: 'Suspender el exfoliante y hacer un tratamiento calmante y reparador',
+              en: 'Stop the scrub and do a soothing, barrier-repair treatment',
+            },
+            good: true,
+            feedback: {
+              es: 'Perfecto. Primero calmar y reparar la barrera; después, rediseñar su rutina en casa.',
+              en: 'Perfect. First soothe and repair the barrier, then redesign her home routine.',
+            },
+          },
+          {
+            text: {
+              es: 'Recomendarle un limpiador más fuerte',
+              en: 'Recommend a stronger cleanser',
+            },
+            good: false,
+            feedback: {
+              es: 'Un limpiador agresivo empeoraría la tirantez. Busca fórmulas suaves y sin perfume.',
+              en: 'A harsh cleanser would make the tightness worse. Look for gentle, fragrance-free formulas.',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'higiene-cabina',
+    emoji: '🧼',
+    color: '#3f8f86',
+    title: {
+      es: 'Higiene y seguridad en cabina',
+      la: 'Higiene y bioseguridad en el gabinete',
+      en: 'Hygiene and safety in the treatment room',
+    },
+    summary: {
+      es: 'Desinfección, esterilización y protocolos para trabajar con seguridad.',
+      en: 'Disinfection, sterilisation and protocols to work safely.',
+    },
+    minutes: 15,
+    steps: [],
+  },
+  {
+    id: 'depilacion',
+    emoji: '✨',
+    color: '#b07a2a',
+    title: {
+      es: 'Depilación con cera paso a paso',
+      la: 'Depilación con cera paso a paso',
+      en: 'Waxing step by step',
+    },
+    summary: {
+      es: 'Ceras, temperaturas, zonas y cuidados posteriores.',
+      en: 'Wax types, temperatures, body areas and aftercare.',
+    },
+    minutes: 20,
+    steps: [],
+  },
+]
