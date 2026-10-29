@@ -5,9 +5,10 @@
 2. Review the SQL migration with a qualified security reviewer before applying.
 3. Apply `supabase/migrations/202610290002_manager_auth_tenant.sql`.
 4. Apply `supabase/migrations/202610290003_business_operations.sql` for staff hours, leave, expenses, and inventory.
-5. Keep using a public publishable key only in client-side environment variables.
-6. Enable email confirmation and configure redirect URLs for local development and preview deployments.
-7. Do not expose service-role keys in Vite variables. Only public anon/publishable key belongs client-side.
+5. Apply `supabase/migrations/202610290004_center_onboarding.sql` for the authenticated first-center creation RPC.
+6. Keep using a public publishable key only in client-side environment variables.
+7. Enable email confirmation and configure redirect URLs for local development and preview deployments.
+8. Do not expose service-role keys in Vite variables. Only public anon/publishable key belongs client-side.
 
 ## Important blockers before production
 - The migration intentionally does not provide center signup, invitation acceptance, staff provisioning, or owner-transfer workflows. Implement those with a server-side Edge Function/RPC using trusted authorization.
