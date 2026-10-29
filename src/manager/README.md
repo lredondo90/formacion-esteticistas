@@ -1,23 +1,22 @@
-# Aula Estética Manager · Primera integración
+# Aula Estética Manager
 
 ## Estado
-Módulo inicial de gestión conectado a la navegación de la aplicación existente. Incluye resumen, agenda, clientes y catálogo ilustrativo de servicios.
+- Supabase Auth para registro, inicio de sesión, confirmación por correo, recuperación y cambio de contraseña.
+- Onboarding del primer centro mediante la RPC `create_my_first_center`; la base de datos asigna el rol de propietaria.
+- El directorio de clientes se lee y escribe en `public.clients`, siempre filtrado por el centro autenticado y protegido por RLS.
+- La agenda, las citas y los servicios siguen siendo datos ilustrativos locales; no representan información compartida.
 
-## Importante: prototipo local
-Esta entrega es una **demo funcional de interfaz**, no un SaaS listo para clientes. Los datos de CRM y citas se almacenan en localStorage del navegador y no se comparten ni tienen respaldo. Se muestran tres citas y tres clientes ficticios. No introducir datos reales personales en esta demo.
+## Configuración de desarrollo
+1. Copia `.env.example` a `.env.local` y usa la URL y la clave publishable de un proyecto Supabase de desarrollo.
+2. Aplica las migraciones `202610290002_manager_auth_tenant.sql` y `202610290004_center_onboarding.sql`.
+3. Habilita la confirmación de correo y autoriza `http://localhost:5173` y las URL de preview en Authentication → URL Configuration.
+4. Registra una cuenta desde `#/gestor`, confirma el correo e inicia sesión para crear el primer centro.
 
-## Qué se incluye
-- Vistas Resumen, Agenda, Clientes y Servicios.
-- Alta local de clientes.
-- Alta local de citas con detección básica de coincidencia de hora/profesional dentro de este navegador.
-- Cancelación local y suma ilustrativa de importes.
-- Responsive para móvil.
+No introduzcas diagnósticos ni datos de salud en las notas. No pongas claves `service_role` en variables `VITE_*`. La base SQL y las políticas RLS requieren revisión antes de usar datos de producción.
 
-## Próxima fase obligatoria
-1. Autenticación real y alta/selección de centro.
-2. PostgreSQL/Supabase con aislamiento por tenant y políticas RLS revisadas.
-3. Reserva transaccional en servidor con protección frente a concurrencia, duración del servicio, recursos y zona horaria.
-4. Gestión de empleados/horarios y servicios configurables.
-5. Tests automáticos, privacidad RGPD, consentimientos y retención.
+## Pendiente antes de producción
+- RLS probada para aislamiento entre centros y matriz de roles.
+- Citas y cambios de estado en operaciones transaccionales con auditoría.
+- Servicios configurables, personal, permisos, privacidad, retención y eliminación de datos.
+- Entitlements de cursos confirmados por servidor; pagos y webhooks fuera de esta integración.
 
-La comprobación de solapamientos actual es solo una ayuda de demo: no protege contra reservas simultáneas ni dispositivos distintos.
