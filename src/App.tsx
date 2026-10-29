@@ -15,6 +15,8 @@ import { LivePage } from './features/live'
 import { PracticePage } from './features/practice'
 import { ProfilePage } from './features/profile'
 import { PlansPage } from './features/plans'
+import { ManagerHome } from './manager/ManagerHome'
+import { ManageBooking, PublicBooking } from './manager/booking/PublicBooking'
 
 const EMPTY: Progress = { points: 0, courses: {} }
 
@@ -39,6 +41,7 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 const NAV = [
+  { id: 'gestor', emoji: '🗓️', label: { es: 'Gestor', en: 'Manager' } },
   { id: 'cursos', emoji: '🎓', label: { es: 'Cursos', en: 'Courses' } },
   { id: 'ia', emoji: '🤖', label: { es: 'IA', en: 'AI' } },
   { id: 'herramientas', emoji: '🧰', label: { es: 'Herramientas', en: 'Tools' } },
@@ -111,6 +114,10 @@ export default function App() {
   const course = COURSES.find((c) => c.id === courseId)
   const page = route.split(/[/?]/)[0]
 
+  // Public pages for the clients of a center: no academy navigation around them.
+  if (page === 'reservar') return <PublicBooking slug={route.split(/[/?]/)[1] ?? ''} />
+  if (page === 'cita') return <ManageBooking token={route.split(/[/?]/)[1] ?? ''} />
+
   let content
   if (page === 'verificar') content = <VerifyPage payload={route.slice('verificar/'.length)} />
   else if (course)
@@ -139,6 +146,7 @@ export default function App() {
   else if (page === 'practicas') content = <PracticePage />
   else if (page === 'perfil') content = <ProfilePage />
   else if (page === 'planes') content = <PlansPage />
+  else if (page === 'gestor') content = <ManagerHome />
   else
     content = (
       <Catalog
@@ -179,7 +187,7 @@ export default function App() {
           </nav>
         )}
 
-        <main>{content}</main>
+        <main className={page === 'gestor' ? 'wide' : undefined}>{content}</main>
 
         {checkout && (
           <Checkout
