@@ -69,6 +69,7 @@ create table public.appointments (
  notes text, created_by uuid references auth.users(id), created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
  time_span tstzrange generated always as (tstzrange(starts_at,ends_at,'[)')) stored,
  check(ends_at>starts_at), check(duration_snapshot_minutes>0), check(price_snapshot_cents>=0),
+ unique(center_id,id),
  foreign key(center_id,location_id) references public.locations(center_id,id),
  foreign key(center_id,client_id) references public.clients(center_id,id),
  foreign key(center_id,service_id) references public.services(center_id,id),
