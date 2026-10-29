@@ -10,6 +10,7 @@ Aplícalas en orden en el proyecto de Supabase (SQL editor o `supabase db push`)
 | `202610290004_center_onboarding.sql` | Alta segura del primer centro |
 | `202610290005_booking_status_values.sql` | Estados de cita `rejected` y `expired` |
 | `202610290006_manager_mvp.sql` | Perfiles, configuración del centro, horario y festivos, cabinas, reglas servicio/profesional/cabina, invitaciones, reservas atómicas en servidor, reserva online pública, cobros inmutables, cola de avisos, consentimientos, notas de salud, lista de espera, auditoría, supresión y exportación |
+| `202610290007_function_hardening.sql` | Ajustes de permisos de funciones que pide el asesor de seguridad de Supabase |
 
 ## Reglas que garantiza la base de datos
 - Toda la información pertenece a un centro y RLS impide ver otro centro.
