@@ -23,4 +23,3 @@
 The Manager route now uses Supabase Auth for signup, login, email confirmation, password recovery, and first-center onboarding. Its client directory reads and writes `public.clients` using the authenticated center id and RLS. Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in local development or a Vercel Preview environment, and allow that environment's redirect URL in Supabase Auth. No secret/service-role key belongs in browser variables.
 
 Appointments and services remain demonstrations and are not stored in Supabase. Do not enter real appointment or payment data until the transactional booking and authorization work is complete. Review and verify the RLS policies and tenant separation before production use.
-

@@ -19,4 +19,3 @@ No introduzcas diagnósticos ni datos de salud en las notas. No pongas claves `s
 - Citas y cambios de estado en operaciones transaccionales con auditoría.
 - Servicios configurables, personal, permisos, privacidad, retención y eliminación de datos.
 - Entitlements de cursos confirmados por servidor; pagos y webhooks fuera de esta integración.
-

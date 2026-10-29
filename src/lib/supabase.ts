@@ -13,4 +13,3 @@ export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabasePublishableKey || 'sb_publishable_placeholder',
 )
-

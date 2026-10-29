@@ -160,4 +160,3 @@ function ManagerWorkspace({center,email,onSignOut}:{center:{id:string;name:strin
   </div>
 }
 function BookingRows({bookings,onCancel}:{bookings:Booking[];onCancel:(id:string)=>void}) { if(!bookings.length)return <div className="mgr-empty"><span>☀️</span><strong>No hay citas para este día</strong><p>Un hueco perfecto para organizarte o abrir reservas.</p></div>;return <div className="mgr-bookings">{bookings.map(b=><article key={b.id} className="mgr-booking"><div className="mgr-time">{b.time}</div><div className="mgr-booking-info"><strong>{b.client}</strong><span>{b.service} · {b.professional}</span></div><div className="mgr-booking-right"><span className={'mgr-status '+(b.status==='Confirmada'?'ok':'wait')}>{b.status}</span><strong>{money(b.price)}</strong></div>{b.status!=='Cancelada'&&<button className="mgr-cancel" title="Cancelar cita" onClick={()=>onCancel(b.id)}>Cancelar</button>}</article>)}</div> }
-
