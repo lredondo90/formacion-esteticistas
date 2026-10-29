@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import './manager.css'
 
 type Client = { id: string; name: string; phone: string; notes: string }
@@ -31,7 +31,7 @@ export function ManagerHome() {
   const confirmedRevenue = todays.filter(b=>b.status==='Confirmada').reduce((sum,b)=>sum+b.price,0)
   const saveClients = (v:Client[])=>{setClients(v);persist('clients',v)}
   const saveBookings = (v:Booking[])=>{setBookings(v);persist('bookings',v)}
-  function createClient(e:React.FormEvent) { e.preventDefault(); if(!clientName.trim())return; const next=[...clients,{id:crypto.randomUUID(),name:clientName.trim(),phone:clientPhone.trim(),notes:clientNotes.trim()}];saveClients(next);setClientName('');setClientPhone('');setClientNotes('');setShowClient(false);setNotice('Cliente añadido en este navegador.') }
+  function createClient(e:FormEvent) { e.preventDefault(); if(!clientName.trim())return; const next=[...clients,{id:crypto.randomUUID(),name:clientName.trim(),phone:clientPhone.trim(),notes:clientNotes.trim()}];saveClients(next);setClientName('');setClientPhone('');setClientNotes('');setShowClient(false);setNotice('Cliente añadido en este navegador.') }
   function createBooking(e:React.FormEvent) { e.preventDefault(); const service=SERVICES.find(s=>s.name===bookingService)!; const overlap=bookings.some(b=>b.date===bookingDate&&b.time===bookingTime&&b.professional===bookingPro&&b.status!=='Cancelada'); if(overlap){setNotice('Ese profesional ya tiene una cita a esa hora. Elige otro horario.');return} const next=[...bookings,{id:crypto.randomUUID(),client:bookingClient,service:service.name,professional:bookingPro,date:bookingDate,time:bookingTime,status:'Pendiente' as const,price:service.price}];saveBookings(next);setShowNew(false);setDay(bookingDate);setNotice('Cita de demostración creada. Aún no sincronizada con servidor.') }
   const nav=[['inicio','Resumen'],['agenda','Agenda'],['clientes','Clientes'],['servicios','Servicios']] as const
   return <div className="mgr">
