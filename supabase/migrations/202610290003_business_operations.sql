@@ -57,7 +57,8 @@ create table public.inventory_products (
   active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique(center_id, sku)
+  unique(center_id, sku),
+  unique(center_id, id)
 );
 create index inventory_center_name_idx on public.inventory_products(center_id, name);
 

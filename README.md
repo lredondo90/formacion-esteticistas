@@ -42,5 +42,7 @@ La app funciona entera en modo demostración. Para activar cada servicio real, a
 | Cobros con Stripe | `STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_PRICE_ALL_ACCESS` y `STRIPE_PRICE_COURSE_<ID>` (p. ej. `STRIPE_PRICE_COURSE_MICROBLADING`) | `api/checkout.ts` crea la sesión de pago. Sin claves, la compra se simula. |
 | Clases en directo | `VITE_LIVE_URL` | Enlace de Zoom, Meet o YouTube Live que aparece 15 minutos antes. |
 | Plan academias | `VITE_CONTACT_EMAIL` | Email que recibe las peticiones de presupuesto. |
+| Gestor de centros (`#/gestor`) y reserva online | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | Agenda, clientes, equipo, caja y reservas en Supabase. Ver `src/manager/README.md` y `supabase/README.md`. |
+| Confirmaciones y recordatorios por correo | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `NOTIFY_FROM`, `APP_URL` (opcional `CRON_SECRET`) | `api/notifications.ts` envía la cola de avisos. Sin claves, los avisos se quedan en cola. |
 
 Pendiente para producción: cuentas de usuario y base de datos (por ejemplo Supabase) para que el foro, la bolsa de empleo, el ranking, las correcciones de expertas y los certificados se compartan entre dispositivos, y un webhook de Stripe que confirme los pagos en el servidor.
