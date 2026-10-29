@@ -36,6 +36,11 @@ const MESSAGES: Record<string, string> = {
   invalid_phone: 'Revisa el teléfono.',
   outside_booking_window: 'Esa fecha ya no se puede reservar online.',
   too_many_bookings: 'Ya tienes varias reservas pendientes en este centro. Llámanos para cualquier cambio.',
+  product_not_found: 'No se encontró el producto.',
+  invalid_movement: 'Revisa el tipo de movimiento y la cantidad.',
+  insufficient_stock: 'No hay tanto stock. Registra antes la compra o un ajuste.',
+  invalid_period: 'Elige un periodo válido (máximo 13 meses).',
+  expenses_category_check: 'Elige una categoría de gasto.',
   too_late_to_cancel: 'Ya no se puede cancelar online. Llama al centro, por favor.',
 }
 
@@ -97,4 +102,29 @@ export const METHOD_LABEL: Record<string, string> = {
   transfer: 'Transferencia',
   online: 'Online',
   other: 'Otro',
+}
+
+export const EXPENSE_LABEL: Record<string, string> = {
+  alquiler: 'Alquiler',
+  personal: 'Personal y nóminas',
+  producto: 'Producto y material',
+  suministros: 'Suministros (luz, agua…)',
+  marketing: 'Marketing',
+  software: 'Software y suscripciones',
+  impuestos: 'Impuestos y tasas',
+  formacion: 'Formación',
+  otros: 'Otros',
+}
+
+export const MOVEMENT_LABEL: Record<string, string> = {
+  purchase: 'Compra',
+  use: 'Consumo',
+  adjustment: 'Ajuste de inventario',
+  waste: 'Merma o caducado',
+  return: 'Devolución',
+}
+
+/** Quantities of stock: up to 3 decimals, no trailing zeros. */
+export function qty(value: number) {
+  return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 3 }).format(Number(value))
 }

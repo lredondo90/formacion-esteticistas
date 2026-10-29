@@ -11,6 +11,8 @@ import { Services } from './services/Services'
 import { Team } from './staff/Team'
 import { Cash } from './payments/Cash'
 import { Settings } from './settings/Settings'
+import { Inventory } from './inventory/Inventory'
+import { Reports } from './reports/Reports'
 
 type Tab = { id: string; icon: string; label: string; roles: Role[]; soon?: string }
 
@@ -20,9 +22,9 @@ const TABS: Tab[] = [
   { id: 'clientes', icon: '👩', label: 'Clientes', roles: ['owner', 'admin', 'reception', 'professional'] },
   { id: 'servicios', icon: '✨', label: 'Servicios', roles: ['owner', 'admin', 'reception', 'professional'] },
   { id: 'equipo', icon: '👥', label: 'Equipo', roles: ['owner', 'admin'] },
-  { id: 'caja', icon: '💶', label: 'Caja', roles: ['owner', 'admin', 'reception'] },
-  { id: 'inventario', icon: '📦', label: 'Inventario', roles: ['owner', 'admin'], soon: 'Etapa 4' },
-  { id: 'informes', icon: '📊', label: 'Informes', roles: ['owner', 'admin'], soon: 'Etapa 4' },
+  { id: 'caja', icon: '💶', label: 'Caja y gastos', roles: ['owner', 'admin', 'reception'] },
+  { id: 'inventario', icon: '📦', label: 'Inventario', roles: ['owner', 'admin'] },
+  { id: 'informes', icon: '📊', label: 'Informes', roles: ['owner', 'admin'] },
   { id: 'whatsapp', icon: '💬', label: 'WhatsApp IA', roles: ['owner', 'admin', 'reception'], soon: 'Etapa 3' },
   { id: 'configuracion', icon: '⚙️', label: 'Configuración', roles: ['owner', 'admin'] },
 ]
@@ -174,6 +176,10 @@ export function ManagerWorkspace({
             <Team />
           ) : active === 'caja' ? (
             <Cash />
+          ) : active === 'inventario' ? (
+            <Inventory />
+          ) : active === 'informes' ? (
+            <Reports />
           ) : active === 'configuracion' ? (
             <Settings />
           ) : (

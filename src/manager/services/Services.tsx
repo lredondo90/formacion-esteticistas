@@ -2,8 +2,9 @@ import { useState, type FormEvent } from 'react'
 import { supabase } from '../../lib/supabase'
 import { money, rpc, run, toCents } from '../api'
 import { useWorkspace } from '../context'
-import type { Service } from '../types'
+import type { Product, Service, ServiceMaterial } from '../types'
 import { Empty, Modal, Notice, SectionHead } from '../ui'
+import { useLoad } from '../useLoad'
 
 const COLORS = ['#b64f78', '#7c5cbf', '#c9853a', '#3a8fc9', '#3aa57a', '#d0567a', '#5f6b7a']
 
@@ -103,8 +104,24 @@ function ServiceForm({ service, onClose, onSaved }: { service: Service | null; o
   const [active, setActive] = useState(service?.active ?? true)
   const [staffIds, setStaffIds] = useState<string[]>(service ? ws.staffServices.filter((l) => l.service_id === service.id).map((l) => l.staff_id!) : [])
   const [resourceIds, setResourceIds] = useState<string[]>(service ? ws.serviceResources.filter((l) => l.service_id === service.id).map((l) => l.resource_id!) : [])
+  const [materials, setMaterials] = useState<{ product_id: string; quantity: string }[]>([])
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const products = useLoad(
+    async () => {
+      const [list, current] = await Promise.all([
+        run(supabase.from('inventory_products').select('*').eq('center_id', center.id).order('name')) as Promise<Product[]>,
+        service ? (run(supabase.from('service_materials').select('*').eq('service_id', service.id)) as Promise<ServiceMaterial[]>) : Promise.resolve([]),
+      ])
+      setMaterials(current.map((m) => ({ product_id: m.product_id, quantity: String(m.quantity) })))
+      return list
+    },
+    [service?.id],
+    [] as Product[],
+  )
+  const productById = new Map(products.data.map((p) => [p.id, p]))
+  const materialCost = materials.reduce((s, m) => s + (Number(m.quantity.replace(',', '.')) || 0) * (productById.get(m.product_id)?.cost_per_unit_cents ?? 0), 0)
+  const priceCents = toCents(price)
   const categories = [...new Set(ws.services.map((s) => s.category).filter(Boolean))] as string[]
 
   const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id])
@@ -136,6 +153,11 @@ function ServiceForm({ service, onClose, onSaved }: { service: Service | null; o
       await run(supabase.from('service_resources').delete().eq('service_id', saved.id))
       if (resourceIds.length)
         await run(supabase.from('service_resources').insert(resourceIds.map((resource_id) => ({ center_id: center.id, service_id: saved.id, resource_id }))))
+      const rows = materials
+        .map((m) => ({ center_id: center.id, service_id: saved.id, product_id: m.product_id, quantity: Number(m.quantity.replace(',', '.')) }))
+        .filter((m) => m.product_id && m.quantity > 0)
+      await run(supabase.from('service_materials').delete().eq('service_id', saved.id))
+      if (rows.length) await run(supabase.from('service_materials').insert([...new Map(rows.map((r) => [r.product_id, r])).values()]))
       await ws.reloadCatalog()
       onSaved()
     } catch (err) {
@@ -214,6 +236,55 @@ function ServiceForm({ service, onClose, onSaved }: { service: Service | null; o
                     </label>
                   ))}
               </div>
+            </>
+          )}
+        </fieldset>
+        <fieldset>
+          <legend>Material por sesión (escandallo)</legend>
+          {products.data.length === 0 ? (
+            <p className="mgr-footnote">
+              Da de alta tus productos en <a href="#/gestor/inventario">Inventario</a> para saber cuánto cuesta cada tratamiento y descontar stock al realizarlo.
+            </p>
+          ) : (
+            <>
+              {materials.map((m, i) => {
+                const p = productById.get(m.product_id)
+                return (
+                  <div key={i} className="mgr-material-row">
+                    <select value={m.product_id} onChange={(e) => setMaterials(materials.map((x, j) => (j === i ? { ...x, product_id: e.target.value } : x)))} aria-label="Producto">
+                      <option value="">Elige producto…</option>
+                      {products.data
+                        .filter((x) => x.active || x.id === m.product_id)
+                        .map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.name}
+                          </option>
+                        ))}
+                    </select>
+                    <input
+                      inputMode="decimal"
+                      value={m.quantity}
+                      onChange={(e) => setMaterials(materials.map((x, j) => (j === i ? { ...x, quantity: e.target.value } : x)))}
+                      aria-label="Cantidad"
+                    />
+                    <span>{p?.unit ?? ''}</span>
+                    <span className="mgr-muted">{p ? money(Math.round((Number(m.quantity.replace(',', '.')) || 0) * p.cost_per_unit_cents), center.currency) : ''}</span>
+                    <button type="button" className="mgr-link muted" onClick={() => setMaterials(materials.filter((_, j) => j !== i))} aria-label="Quitar">
+                      ×
+                    </button>
+                  </div>
+                )
+              })}
+              <button type="button" className="mgr-link" onClick={() => setMaterials([...materials, { product_id: '', quantity: '1' }])}>
+                ＋ Añadir producto
+              </button>
+              {Number.isFinite(priceCents) && priceCents > 0 && (
+                <p className="mgr-footnote">
+                  Coste de material: <strong>{money(Math.round(materialCost), center.currency)}</strong> · Margen antes de comisiones:{' '}
+                  <strong>{money(Math.round(priceCents - materialCost), center.currency)}</strong> ({Math.round(((priceCents - materialCost) / priceCents) * 100)} %). Al marcar la
+                  cita como realizada se descuenta del stock.
+                </p>
+              )}
             </>
           )}
         </fieldset>

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { supabase } from '../../lib/supabase'
 import { METHOD_LABEL, money, rpc, run, toCents } from '../api'
 import { AppointmentDetail } from '../calendar/AppointmentDetail'
+import { Expenses } from './Expenses'
 import { useWorkspace } from '../context'
 import { addDays, formatDay, formatTime, fromZoned, todayIn } from '../time'
 import type { Appointment, Client, Payment } from '../types'
@@ -143,6 +144,8 @@ export function Cash() {
           </div>
         )}
       </section>
+
+      {ws.can('owner', 'admin') && <Expenses />}
 
       {selling && (
         <SaleForm

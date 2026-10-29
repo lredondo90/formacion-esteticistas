@@ -10,6 +10,7 @@ psql -v ON_ERROR_STOP=1 -q -d "$DB" -1 -f supabase/tests/local_stub.sql
 for file in supabase/migrations/*.sql; do
   psql -v ON_ERROR_STOP=1 -q -d "$DB" -1 -f "$file" >/dev/null
 done
+psql -v ON_ERROR_STOP=1 -q -d "$DB" -f supabase/tests/helpers.sql
 for file in supabase/tests/*.test.sql; do
   psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$file" 2>&1 >/dev/null | sed 's/^psql:[^ ]* NOTICE:  /  /'
 done

@@ -242,6 +242,7 @@ function StaffForm({ staff, onClose, onSaved }: { staff: Staff | null; onClose: 
   const [phone, setPhone] = useState(staff?.phone ?? '')
   const [color, setColor] = useState(staff?.color ?? COLORS[ws.staff.length % COLORS.length])
   const [bookable, setBookable] = useState(staff?.bookable ?? true)
+  const [commission, setCommission] = useState(String(staff?.commission_percent ?? 0))
   const [active, setActive] = useState(staff?.active ?? true)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -275,6 +276,7 @@ function StaffForm({ staff, onClose, onSaved }: { staff: Staff | null; onClose: 
         phone: phone.trim() || null,
         color,
         bookable,
+        commission_percent: Math.min(100, Math.max(0, Number(commission.replace(',', '.')) || 0)),
         active,
       }
       await run(staff ? supabase.from('staff').update(values).eq('id', staff.id) : supabase.from('staff').insert(values))
@@ -316,6 +318,11 @@ function StaffForm({ staff, onClose, onSaved }: { staff: Staff | null; onClose: 
           <label>
             Teléfono
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </label>
+          <label>
+            Comisión sobre tratamientos (%)
+            <input inputMode="decimal" value={commission} onChange={(e) => setCommission(e.target.value)} placeholder="0" />
+            <small className="mgr-muted">Se calcula al marcar cada cita como realizada y sale en Informes.</small>
           </label>
         </div>
         <div className="mgr-form-grid three">

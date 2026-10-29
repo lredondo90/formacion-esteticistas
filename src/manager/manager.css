@@ -364,3 +364,39 @@ button.mgr-table-row:hover { background: var(--m-soft); }
   .mgr-month-day { min-height: 56px; padding: 4px; }
   .mgr-month-day strong { font-size: 0.6rem; }
 }
+
+/* Etapa 4: inventory, expenses and reports */
+.mgr-metrics strong.warn, .mgr-table-row strong.warn { color: var(--m-bad); }
+.mgr-metrics strong.good { color: var(--m-ok); }
+.mgr-table-row.inactive { opacity: 0.55; }
+.mgr-filters { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.mgr-secondary.small { padding: 6px 10px; font-size: 0.82rem; }
+.mgr-stock-cols { grid-template-columns: 1.6fr 0.8fr 0.8fr 0.8fr auto; }
+.mgr-move-cols { grid-template-columns: 1fr 1.6fr 0.8fr 0.8fr; }
+.mgr-expense-cols { grid-template-columns: 80px 1.8fr 1fr 0.8fr; }
+.mgr-report-cols { grid-template-columns: 1.6fr 0.5fr 0.9fr 0.8fr 0.8fr 1.1fr 0.9fr; min-width: 720px; }
+.mgr-report-staff-cols { grid-template-columns: 1.4fr 0.6fr 0.9fr 0.9fr 0.6fr 0.7fr; }
+.mgr-report-cols small { color: var(--m-muted); font-weight: 500; }
+.mgr-material-row { display: grid; grid-template-columns: minmax(0, 2fr) 80px 50px 80px 28px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 0.88rem; }
+.mgr-breakdown { max-width: 460px; display: flex; flex-direction: column; gap: 2px; margin: 4px 0 10px; }
+.mgr-breakdown-line { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 0.9rem; color: var(--m-muted); }
+.mgr-breakdown-line strong { color: var(--m-ink); }
+.mgr-breakdown-line.total { border-top: 1px solid var(--m-line); color: var(--m-ink); font-weight: 700; padding-top: 8px; }
+.mgr-report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.mgr-report-grid > .mgr-panel { margin: 0; min-width: 0; }
+.mgr-bars { display: flex; flex-direction: column; gap: 8px; }
+.mgr-bar-row { display: grid; grid-template-columns: minmax(90px, 1fr) 2fr auto; gap: 10px; align-items: center; font-size: 0.85rem; }
+.mgr-bar-row span { color: var(--m-muted); }
+.mgr-bar-track { height: 10px; background: var(--m-soft); border-radius: 0 4px 4px 0; }
+.mgr-bar { height: 100%; background: var(--m-pink); border-radius: 0 4px 4px 0; }
+.mgr-heatmap { display: grid; gap: 3px; overflow-x: auto; font-size: 0.72rem; }
+.mgr-heat-row { display: contents; }
+.mgr-heat-hour { text-align: center; color: var(--m-muted); }
+.mgr-heat-day { color: var(--m-muted); font-weight: 700; align-self: center; }
+.mgr-heat-cell { height: 22px; border-radius: 4px; background: color-mix(in srgb, var(--m-pink) calc(var(--heat) * 100%), var(--m-soft)); }
+.mgr-subhead { font-size: 0.95rem; margin: 18px 0 6px; }
+.mgr-plain-list { margin: 0 0 8px; padding-left: 18px; font-size: 0.88rem; display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 640px) {
+  .mgr-material-row { grid-template-columns: minmax(0, 1fr) 70px 40px 28px; }
+  .mgr-material-row .mgr-muted { display: none; }
+}

@@ -31,6 +31,7 @@ export type Staff = {
   role_title: string | null
   color: string
   bookable: boolean
+  commission_percent: number
   active: boolean
 }
 
@@ -81,6 +82,8 @@ export type Appointment = {
   source: 'staff' | 'online' | 'whatsapp' | 'import'
   cancel_reason: string | null
   public_token: string
+  material_cost_cents: number | null
+  commission_cents: number | null
   created_at: string
 }
 
@@ -104,3 +107,60 @@ export type Closure = { id: string; center_id: string; starts_on: string; ends_o
 export type WorkingHour = { id: string; center_id: string; staff_id: string; weekday: number; starts_at: string; ends_at: string; active: boolean }
 export type TimeOff = { id: string; center_id: string; staff_id: string; starts_at: string; ends_at: string; reason: string | null }
 export type Link = { service_id: string; staff_id?: string; resource_id?: string }
+
+export type Product = {
+  id: string
+  center_id: string
+  name: string
+  sku: string | null
+  unit: string
+  quantity: number
+  low_stock_threshold: number
+  cost_per_unit_cents: number
+  active: boolean
+}
+
+export type MovementType = 'purchase' | 'use' | 'adjustment' | 'waste' | 'return'
+export type StockMovement = {
+  id: string
+  product_id: string
+  movement_type: MovementType
+  quantity_delta: number
+  unit_cost_cents: number | null
+  notes: string | null
+  appointment_id: string | null
+  created_at: string
+}
+
+export type ServiceMaterial = { center_id: string; service_id: string; product_id: string; quantity: number }
+
+export type Expense = {
+  id: string
+  center_id: string
+  description: string
+  category: string
+  amount_cents: number
+  incurred_on: string
+  recurring: boolean
+  notes: string | null
+}
+
+type Count = { count: number; revenue: number; commissions: number; minutes: number }
+export type BusinessReport = {
+  from: string
+  to: string
+  collected_cents: number
+  refunds_cents: number
+  billed_cents: number
+  material_cost_cents: number
+  commission_cents: number
+  expenses_cents: number
+  expenses_by_category: Record<string, number>
+  appointments: { completed: number; cancelled: number; no_show: number; upcoming: number; online: number }
+  capacity_minutes: number
+  booked_minutes: number
+  by_service: (Count & { service_id: string; name: string; materials: number })[]
+  by_staff: (Count & { staff_id: string; name: string; no_show: number })[]
+  heatmap: { dow: number; hour: number; minutes: number }[]
+  low_stock: { name: string; quantity: number; unit: string; threshold: number }[]
+}
