@@ -15,6 +15,7 @@ import { LivePage } from './features/live'
 import { PracticePage } from './features/practice'
 import { ProfilePage } from './features/profile'
 import { PlansPage } from './features/plans'
+import { ManagerHome } from './manager/ManagerHome'
 
 const EMPTY: Progress = { points: 0, courses: {} }
 
@@ -39,6 +40,7 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 const NAV = [
+  { id: 'gestor', emoji: '🗓️', label: { es: 'Gestor', en: 'Manager' } },
   { id: 'cursos', emoji: '🎓', label: { es: 'Cursos', en: 'Courses' } },
   { id: 'ia', emoji: '🤖', label: { es: 'IA', en: 'AI' } },
   { id: 'herramientas', emoji: '🧰', label: { es: 'Herramientas', en: 'Tools' } },
@@ -139,6 +141,7 @@ export default function App() {
   else if (page === 'practicas') content = <PracticePage />
   else if (page === 'perfil') content = <ProfilePage />
   else if (page === 'planes') content = <PlansPage />
+  else if (page === 'gestor') content = <ManagerHome />
   else
     content = (
       <Catalog
