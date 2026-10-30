@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { COURSES, type Step } from '../courses'
+import { LABS } from '../labs'
 import { sayer, tr, type Locale } from '../i18n'
 import { callApi, readImage } from '../services'
 import { FREE_AI_USES, useApp } from '../state'
@@ -221,6 +222,7 @@ function searchCourses(question: string, locale: Locale): string | null {
     if (step.kind === 'flashcards') step.cards.forEach((c) => add(tr(c.front, locale), tr(c.back, locale)))
     if (step.kind === 'quiz') add(tr(step.question, locale), tr(step.explain, locale))
     if (step.kind === 'video') step.scenes.forEach((sc) => add(sc.title ? tr(sc.title, locale) : '', tr(sc.caption, locale)))
+    if (step.kind === 'lab' && step.lab !== 'brows') LABS[step.lab].learn.forEach((l) => add(tr(l.title, locale), tr(l.text, locale)))
   }
   COURSES.forEach((c) => c.steps.forEach(fromStep))
   const norm = (t: string) => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')

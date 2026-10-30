@@ -1,6 +1,7 @@
 import type { Text } from './i18n'
 import { tx } from './i18n'
 import { PREMIUM_COURSES } from './premium'
+import type { LabId } from './labs'
 
 export type Question = { question: Text; options: Text[]; answer: number; explain: Text }
 
@@ -23,6 +24,16 @@ export type BranchNode = {
   choices: { text: Text; next?: string; end?: 'good' | 'bad'; feedback?: Text }[]
 }
 
+// Pieces of an interactive theory lesson, revealed one at a time.
+export type Block =
+  | { t: 'p'; text: Text }
+  | { t: 'key'; title?: Text; items: Text[] }
+  | { t: 'steps'; title?: Text; items: Text[] }
+  | { t: 'pairs'; title?: Text; items: { a: Text; b: Text }[] }
+  | { t: 'fact'; text: Text }
+  | { t: 'warn'; text: Text }
+  | { t: 'myth'; claim: Text; myth: boolean; truth: Text }
+
 export type Step =
   | { kind: 'lesson'; title: Text; body: Text; tip?: Text; emoji: string }
   | { kind: 'flashcards'; title: Text; cards: { front: Text; back: Text }[] }
@@ -41,7 +52,10 @@ export type Step =
     }
   | { kind: 'branch'; title: Text; start: string; nodes: Record<string, BranchNode> }
   // Hands-on guided practice: learn on an animated drawing, then do it yourself.
-  | { kind: 'lab'; lab: 'brows'; title: Text }
+  | { kind: 'lab'; lab: LabId; title: Text }
+  | { kind: 'theory'; emoji: string; title: Text; blocks: Block[] }
+  // Final test: passing it (share of right answers ≥ `pass`) earns the certificate.
+  | { kind: 'exam'; title: Text; questions: Question[]; pass: number }
 
 export type Course = {
   id: string
@@ -54,6 +68,8 @@ export type Course = {
   // Paid course: the first `freeSteps` steps are a free preview.
   premium?: { eur: number; usd: number }
   freeSteps?: number
+  // Course split into modules; `start`/`end` index into `steps`.
+  modules?: { emoji: string; title: Text; start: number; end: number }[]
   certificate?: boolean
 }
 
@@ -74,64 +90,9 @@ const FREE_COURSES: Course[] = [
     minutes: 14,
     steps: [
       {
-        kind: 'video',
-        title: tx('Vídeo: el diagnóstico en 1 minuto', 'Video: skin analysis in 1 minute', 'Video: el diagnóstico en 1 minuto'),
-        scenes: [
-          {
-            emoji: '💡',
-            props: ['🪞', '🧴'],
-            anim: 'zoom',
-            title: tx('Buena luz, piel limpia', 'Good light, clean skin'),
-            caption: tx(
-              'Antes de tocar nada, limpia la piel y obsérvala con luz natural o una lupa con luz fría.',
-              'Before touching anything, cleanse the skin and look at it in natural light or under a cold-light magnifier.',
-            ),
-          },
-          {
-            emoji: '✨',
-            props: ['👃', '🧠'],
-            anim: 'pulse',
-            title: tx('Mira la zona T', 'Check the T-zone'),
-            caption: tx(
-              'Frente, nariz y barbilla te dicen mucho: si brillan y los poros se ven abiertos, hay exceso de sebo.',
-              'Forehead, nose and chin tell you a lot: if they shine and pores look open, there is excess sebum.',
-              'Frente, nariz y mentón te dicen mucho: si brillan y los poros se ven abiertos, hay exceso de sebo.',
-            ),
-            question: {
-              question: tx('Si solo brilla la zona T, ¿qué piel sospechas?', 'If only the T-zone shines, which skin do you suspect?'),
-              options: [tx('Seca', 'Dry'), tx('Mixta', 'Combination'), tx('Sensible', 'Sensitive')],
-              answer: 1,
-              explain: tx('Brillo solo en la zona T apunta a piel mixta.', 'Shine only in the T-zone points to combination skin.'),
-            },
-          },
-          {
-            emoji: '🤏',
-            props: ['🫧'],
-            anim: 'float',
-            title: tx('Tacto y textura', 'Touch and texture'),
-            caption: tx(
-              'Pasa la yema de los dedos: aspereza o descamación indican sequedad; granitos y rugosidad, exceso de grasa.',
-              'Run your fingertips over it: roughness or flaking means dryness; bumps and uneven texture mean excess oil.',
-              'Pasa la yema de los dedos: aspereza o descamación indican resequedad; barritos y rugosidad, exceso de grasa.',
-            ),
-          },
-          {
-            emoji: '🗣️',
-            props: ['📝'],
-            anim: 'slide',
-            title: tx('Pregunta siempre', 'Always ask'),
-            caption: tx(
-              'Completa la ficha: rutina, medicación, alergias y cómo reacciona su piel al sol y a los productos nuevos.',
-              'Fill in the record card: routine, medication, allergies and how the skin reacts to sun and new products.',
-            ),
-            question: {
-              question: tx('¿Qué dato NO es necesario en la ficha?', 'Which detail is NOT needed on the record card?'),
-              options: [tx('Medicación actual', 'Current medication'), tx('Alergias', 'Allergies'), tx('Su signo del zodiaco', 'Star sign')],
-              answer: 2,
-              explain: tx('Medicación y alergias pueden cambiar el tratamiento. El zodiaco, no.', 'Medication and allergies can change the treatment. Star signs cannot.'),
-            },
-          },
-        ],
+        kind: 'lab',
+        lab: 'skin',
+        title: tx('Práctica guiada: diagnostica una piel', 'Guided practice: analyse a skin'),
       },
       {
         kind: 'hotspot',

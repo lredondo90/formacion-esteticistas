@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { COURSES, type Course, type Step } from './courses'
-import { ALL_ACCESS_PRICE, formatPrice, LOCALES, t, tr, type Locale } from './i18n'
+import { ALL_ACCESS_PRICE, formatPrice, LOCALES, sayer, t, tr, type Locale } from './i18n'
 import { Branch, Hotspot, VideoLesson } from './interactive'
 import { BrowLab } from './labs/BrowLab'
+import { GuidedLab } from './labs/engine'
+import { LABS } from './labs'
+import { Exam, Theory } from './theory'
 import { load, save } from './storage'
 import { startCheckout } from './services'
 import { AuthPage } from './AuthPage'
@@ -341,6 +344,7 @@ function Catalog({
   onOpen: (id: string) => void
   onBuy: (target: string) => void
 }) {
+  const say = sayer(locale)
   const card = (c: Course) => {
     const state = progress.courses[c.id]
     const available = c.steps.length > 0
@@ -366,11 +370,26 @@ function Catalog({
         <h3>{tr(c.title, locale)}</h3>
         <p>{tr(c.summary, locale)}</p>
         <p className="meta">
-          {c.minutes} {t('minutes', locale)}
-          {available && ` · ${c.steps.length} ${t('steps', locale)}`}
-          {c.premium && !unlocked && ` · ${c.freeSteps ?? 0} ${t('freeLessons', locale)}`}
+          {c.minutes >= 60 ? `${Math.floor(c.minutes / 60)} h${c.minutes % 60 ? ` ${c.minutes % 60} min` : ''}` : `${c.minutes} ${t('minutes', locale)}`}
+          {c.modules
+            ? ` · ${c.modules.length} ${say('módulos', 'modules')} · ${say('examen final', 'final exam')}`
+            : available && ` · ${c.steps.length} ${t('steps', locale)}`}
+          {c.premium && !unlocked && (c.modules ? ` · ${say('módulo 1 gratis', 'module 1 free')}` : ` · ${c.freeSteps ?? 0} ${t('freeLessons', locale)}`)}
           {c.certificate && ` · 🎓 ${t('withCertificate', locale)}`}
         </p>
+        {c.modules && (
+          <details className="syllabus">
+            <summary>{say('Ver temario', 'See syllabus')}</summary>
+            <ol>
+              {c.modules.map((m, i) => (
+                <li key={i}>
+                  {m.emoji} {tr(m.title, locale)}
+                </li>
+              ))}
+              <li>📝 {say('Examen final y certificado', 'Final exam and certificate')}</li>
+            </ol>
+          </details>
+        )}
         {available && (
           <div className="bar">
             <div style={{ width: `${pct}%` }} />
@@ -515,10 +534,13 @@ function Player({
   const step = course.steps[index]
   const needsSolving = step && step.kind !== 'lesson' && step.kind !== 'flashcards'
   const locked = !unlocked && index >= (course.freeSteps ?? 0)
+  const moduleIndex = course.modules?.findIndex((m) => index >= m.start && index < m.end) ?? -1
+  const module = moduleIndex >= 0 ? course.modules![moduleIndex] : null
+  const say = sayer(locale)
 
   const next = () => {
     const nextIndex = index + 1
-    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'lab' ? 25 : step.kind === 'video' ? 15 : needsSolving ? 10 : 2, step.kind)
+    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'exam' ? 50 : step.kind === 'lab' ? 25 : step.kind === 'video' ? 15 : needsSolving ? 10 : 2, step.kind)
     setIndex(nextIndex)
     setSolved(false)
   }
@@ -533,6 +555,13 @@ function Player({
           <div style={{ width: `${(Math.min(index, course.steps.length) / course.steps.length) * 100}%` }} />
         </div>
       </div>
+      {course.modules && !finished && (
+        <p className="module-label">
+          {module
+            ? `${module.emoji} ${say('Módulo', 'Module')} ${moduleIndex + 1}/${course.modules.length} · ${tr(module.title, locale)}`
+            : `📝 ${say('Examen final', 'Final exam')}`}
+        </p>
+      )}
 
       {finished ? (
         <div className="panel center">
@@ -608,8 +637,12 @@ function StepView({ step, locale, onSolved }: { step: Step; locale: Locale; onSo
       return <Hotspot step={step} locale={locale} onSolved={onSolved} />
     case 'branch':
       return <Branch step={step} locale={locale} onSolved={onSolved} />
+    case 'theory':
+      return <Theory step={step} locale={locale} onSolved={onSolved} />
+    case 'exam':
+      return <Exam step={step} locale={locale} onSolved={onSolved} />
     case 'lab':
-      return <BrowLab locale={locale} onSolved={onSolved} />
+      return step.lab === 'brows' ? <BrowLab locale={locale} onSolved={onSolved} /> : <GuidedLab def={LABS[step.lab]} locale={locale} onSolved={onSolved} />
   }
 }
 
