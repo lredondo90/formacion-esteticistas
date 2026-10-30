@@ -16,62 +16,9 @@ export const massage: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('Cómo se mueve la linfa', 'How lymph moves'),
-      scenes: [
-        {
-          emoji: '💧',
-          props: ['🔁'],
-          anim: 'float',
-          title: tx('Un sistema sin bomba', 'A system without a pump'),
-          caption: tx(
-            'La linfa no tiene corazón que la empuje: se mueve con la respiración, los músculos y el masaje.',
-            'Lymph has no heart to push it: it moves with breathing, muscles and massage.',
-          ),
-        },
-        {
-          emoji: '🫳',
-          props: ['🪶'],
-          anim: 'pulse',
-          title: tx('Presión muy suave', 'Very light pressure'),
-          caption: tx(
-            'El drenaje usa una presión ligera, de unos 30-40 mmHg, con movimientos lentos y rítmicos que estiran la piel.',
-            'Drainage uses light pressure, about 30–40 mmHg, with slow rhythmic movements that stretch the skin.',
-          ),
-          question: {
-            question: tx('¿Cómo es la presión en el drenaje linfático?', 'What pressure is used in lymphatic drainage?'),
-            options: [tx('Fuerte y profunda', 'Strong and deep'), tx('Suave y rítmica', 'Light and rhythmic'), tx('Con percusión', 'Percussive')],
-            answer: 1,
-            explain: tx('Los vasos linfáticos están en la superficie: si aprietas, los cierras.', 'Lymph vessels are superficial: press hard and you close them.'),
-          },
-        },
-        {
-          emoji: '🎯',
-          props: ['⬆️'],
-          anim: 'zoom',
-          title: tx('Primero vaciar, después drenar', 'Empty first, then drain'),
-          caption: tx(
-            'Empieza siempre por los ganglios más cercanos al final del recorrido, en el cuello y la clavícula.',
-            'Always start at the nodes nearest the end of the pathway, at the neck and collarbone.',
-          ),
-        },
-        {
-          emoji: '➡️',
-          props: ['🦵'],
-          anim: 'slide',
-          title: tx('Siempre hacia los ganglios', 'Always towards the nodes'),
-          caption: tx(
-            'Las maniobras van de la zona a los ganglios: en la pierna, de abajo arriba hacia la ingle.',
-            'Strokes move from the area towards the nodes: on the leg, from bottom to top towards the groin.',
-          ),
-          question: {
-            question: tx('En la pierna, ¿hacia dónde se dirigen las maniobras?', 'On the leg, which way do the strokes go?'),
-            options: [tx('Hacia el pie', 'Towards the foot'), tx('Hacia la ingle', 'Towards the groin'), tx('En círculos sin dirección', 'Circles with no direction')],
-            answer: 1,
-            explain: tx('La linfa de la pierna drena a los ganglios inguinales.', 'Lymph from the leg drains into the inguinal nodes.'),
-          },
-        },
-      ],
+      kind: 'lab',
+      lab: 'massage',
+      title: tx('Práctica guiada: drenaje linfático facial', 'Guided practice: facial lymphatic drainage'),
     },
     {
       kind: 'hotspot',

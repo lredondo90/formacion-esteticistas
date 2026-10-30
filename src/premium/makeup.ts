@@ -16,67 +16,9 @@ export const makeup: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('Una base que dura todo el día', 'A base that lasts all day'),
-      scenes: [
-        {
-          emoji: '🧴',
-          props: ['💧'],
-          anim: 'zoom',
-          title: tx('Empieza por la piel', 'Start with the skin'),
-          caption: tx(
-            'Limpia, hidrata y deja que el producto se absorba unos minutos. Una piel bien preparada es la mitad del maquillaje.',
-            'Cleanse, moisturise and let it absorb for a few minutes. Well-prepped skin is half the make-up.',
-            'Limpia, humecta y deja que el producto se absorba unos minutos. Una piel bien preparada es la mitad del maquillaje.',
-          ),
-        },
-        {
-          emoji: '🎨',
-          props: ['🟢', '🍑'],
-          anim: 'pulse',
-          title: tx('Corrige con color', 'Correct with colour'),
-          caption: tx(
-            'El color opuesto neutraliza: verde para rojeces, melocotón o salmón para ojeras azuladas.',
-            'Opposite colours cancel out: green for redness, peach or salmon for bluish dark circles.',
-          ),
-          question: {
-            question: tx('¿Qué corrector usas para una rojez?', 'Which corrector for redness?'),
-            options: [tx('Verde', 'Green'), tx('Lila', 'Lilac'), tx('Amarillo', 'Yellow')],
-            answer: 0,
-            explain: tx('El verde es el complementario del rojo y lo neutraliza.', 'Green is the complementary colour of red and cancels it out.'),
-          },
-        },
-        {
-          emoji: '🧽',
-          props: ['✨'],
-          anim: 'float',
-          title: tx('Base en capas finas', 'Base in thin layers'),
-          caption: tx(
-            'Aplica la base del centro hacia fuera con esponja húmeda. Mejor dos capas finas que una gruesa.',
-            'Apply foundation from the centre outwards with a damp sponge. Two thin layers beat one thick one.',
-          ),
-        },
-        {
-          emoji: '🌫️',
-          props: ['📸'],
-          anim: 'slide',
-          title: tx('Sella para las fotos', 'Set it for photos'),
-          caption: tx(
-            'Polvos solo donde brilla y spray fijador al final. Evita polvos con mucho SPF o sílice: pueden salir blancos con flash.',
-            'Powder only where it shines, then setting spray. Avoid powders with high SPF or lots of silica: they can flash white.',
-          ),
-          question: {
-            question: tx('¿Por qué la cara sale blanca en las fotos con flash?', 'Why does the face look white in flash photos?'),
-            options: [
-              tx('Por usar poca base', 'Too little foundation'),
-              tx('Por productos con SPF alto o sílice', 'Products with high SPF or silica'),
-              tx('Por el colorete', 'The blush'),
-            ],
-            answer: 1,
-            explain: tx('Esos ingredientes reflejan la luz del flash ("flashback").', 'Those ingredients bounce back the flash ("flashback").'),
-          },
-        },
-      ],
+      kind: 'lab',
+      lab: 'makeup',
+      title: tx('Práctica guiada: contorno e iluminación', 'Guided practice: contour and highlight'),
     },
     {
       kind: 'hotspot',

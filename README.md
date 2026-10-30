@@ -8,7 +8,7 @@ Aplicación web de formación interactiva para esteticistas, en tres versiones d
 
 Cada curso combina lecciones cortas, tarjetas para girar, quizzes, ejercicios de unir parejas, ordenar pasos y casos reales, además de:
 
-- **Lecciones en vídeo interactivo**: escenas animadas con subtítulos, narración por voz opcional y pausas con preguntas.
+- **Prácticas guiadas**: cada curso empieza con una práctica sobre un dibujo animado (aprendes y luego lo haces tú: arrastrar, trazar con el dedo, ajustar parámetros, ordenar pasos y decidir). El motor está en `src/labs/engine.tsx` y cada práctica en `src/labs/<curso>.tsx`.
 - **Zonas para tocar** sobre ilustraciones (rostro, ojo, uña, cuerpo).
 - **Simulaciones con decisiones**: conversaciones con clientas en las que cada respuesta lleva a un final distinto.
 

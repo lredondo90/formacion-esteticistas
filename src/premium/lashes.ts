@@ -16,76 +16,9 @@ export const lashes: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('Aplicar una extensión clásica', 'Applying a classic extension'),
-      scenes: [
-        {
-          emoji: '🩹',
-          props: ['👁️'],
-          anim: 'zoom',
-          title: tx('Aísla las pestañas de abajo', 'Isolate the lower lashes'),
-          caption: tx(
-            'Coloca un parche de hidrogel bajo el ojo, sin tocar el lagrimal ni el ojo.',
-            'Place a hydrogel pad under the eye, without touching the inner corner or the eye itself.',
-          ),
-        },
-        {
-          emoji: '🧪',
-          props: ['💨'],
-          anim: 'float',
-          title: tx('Limpia y prepara', 'Cleanse and prep'),
-          caption: tx(
-            'Limpia las pestañas naturales y aplica primer: sin grasa el adhesivo agarra mucho mejor.',
-            'Cleanse the natural lashes and apply primer: without oil the adhesive grips much better.',
-          ),
-        },
-        {
-          emoji: '🥢',
-          props: ['✨'],
-          anim: 'slide',
-          title: tx('Aísla una sola pestaña', 'Isolate a single lash'),
-          caption: tx(
-            'Con una pinza separa una pestaña natural. Cada extensión va sobre una sola pestaña, nunca uniendo dos.',
-            'With tweezers, separate one natural lash. Each extension goes on one single lash, never joining two.',
-          ),
-          question: {
-            question: tx('¿Por qué no se pegan dos pestañas juntas?', 'Why should two lashes never be stuck together?'),
-            options: [
-              tx('Porque se gasta más adhesivo', 'Because it uses more adhesive'),
-              tx('Porque crecen a distinto ritmo y se dañan', 'Because they grow at different rates and get damaged'),
-              tx('Porque queda menos volumen', 'Because it looks less full'),
-            ],
-            answer: 1,
-            explain: tx('Cada pestaña tiene su ciclo: unirlas tira del folículo y puede provocar caída.', 'Each lash has its own cycle: joining them pulls on the follicle and can cause loss.'),
-          },
-        },
-        {
-          emoji: '📐',
-          props: ['💧'],
-          anim: 'pulse',
-          title: tx('A 1 mm del párpado', '1 mm from the eyelid'),
-          caption: tx(
-            'Pega la extensión a 0,5-1 mm de la base, sin tocar la piel del párpado.',
-            'Attach the extension 0.5–1 mm from the base, without touching the eyelid skin.',
-          ),
-          question: {
-            question: tx('¿A qué distancia del párpado va la extensión?', 'How far from the eyelid does the extension go?'),
-            options: [tx('Pegada a la piel', 'Touching the skin'), tx('A 0,5-1 mm', '0.5–1 mm away'), tx('A 5 mm', '5 mm away')],
-            answer: 1,
-            explain: tx('Tocar la piel irrita y crea un efecto "pincel" cuando la pestaña crece.', 'Touching the skin irritates and causes a "paintbrush" effect as the lash grows.'),
-          },
-        },
-        {
-          emoji: '🌡️',
-          props: ['💦'],
-          anim: 'zoom',
-          title: tx('Cuida el ambiente', 'Watch the room'),
-          caption: tx(
-            'El adhesivo trabaja mejor entre 40 y 60 % de humedad y unos 20-24 grados. Usa un higrómetro.',
-            'Adhesive works best at 40–60% humidity and around 20–24 °C. Use a hygrometer.',
-          ),
-        },
-      ],
+      kind: 'lab',
+      lab: 'lashes',
+      title: tx('Práctica guiada: aplica extensiones de pestañas', 'Guided practice: apply lash extensions'),
     },
     {
       kind: 'hotspot',

@@ -16,62 +16,9 @@ export const business: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('Cómo calcular un precio rentable', 'How to price for profit'),
-      scenes: [
-        {
-          emoji: '🧾',
-          props: ['💶'],
-          anim: 'zoom',
-          title: tx('No copies precios', "Don't copy prices"),
-          caption: tx(
-            'Copiar el precio de la competencia es la forma más rápida de perder dinero. Empieza por tus costes.',
-            "Copying competitors' prices is the fastest way to lose money. Start with your costs.",
-          ),
-        },
-        {
-          emoji: '⏱️',
-          props: ['🏠', '💡'],
-          anim: 'spin',
-          title: tx('Tu coste por hora', 'Your cost per hour'),
-          caption: tx(
-            'Suma alquiler, luz, seguros, cuotas y tu sueldo, y divídelo entre las horas que realmente atiendes al mes.',
-            'Add rent, utilities, insurance, fees and your own salary, and divide by the hours you actually treat clients each month.',
-          ),
-          question: {
-            question: tx('Costes fijos: 3.000 al mes. Atiendes 100 horas. ¿Coste por hora?', 'Fixed costs: 3,000 a month. You treat clients 100 hours. Cost per hour?'),
-            options: [tx('3', '3'), tx('30', '30'), tx('300', '300')],
-            answer: 1,
-            explain: tx('3.000 ÷ 100 = 30 por hora, antes de producto y beneficio.', '3,000 ÷ 100 = 30 per hour, before products and profit.'),
-          },
-        },
-        {
-          emoji: '🧮',
-          props: ['➕'],
-          anim: 'pulse',
-          title: tx('La fórmula', 'The formula'),
-          caption: tx(
-            'Precio = (coste por hora × duración) + producto + margen de beneficio. Y después, los impuestos.',
-            'Price = (cost per hour × duration) + products + profit margin. Then add tax.',
-          ),
-          question: {
-            question: tx('Tratamiento de 1 h, coste 30/h, producto 5, margen 30 %. ¿Precio sin impuestos?', '1 h treatment, cost 30/h, products 5, 30% margin. Price before tax?'),
-            options: [tx('35', '35'), tx('45,50', '45.50'), tx('60', '60')],
-            answer: 1,
-            explain: tx('(30 + 5) × 1,3 = 45,50.', '(30 + 5) × 1.3 = 45.50.'),
-          },
-        },
-        {
-          emoji: '💎',
-          props: ['⭐'],
-          anim: 'float',
-          title: tx('Vende valor', 'Sell value'),
-          caption: tx(
-            'Si tu precio sale más alto que el de la competencia, comunica lo que te hace diferente: resultados, trato y experiencia.',
-            'If your price is higher than competitors, communicate what makes you different: results, care and experience.',
-          ),
-        },
-      ],
+      kind: 'lab',
+      lab: 'business',
+      title: tx('Práctica guiada: precios y números del centro', 'Guided practice: pricing and salon numbers'),
     },
     {
       kind: 'branch',

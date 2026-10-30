@@ -16,66 +16,9 @@ export const laser: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('Cómo elimina el vello un láser', 'How a laser removes hair'),
-      scenes: [
-        {
-          emoji: '🎯',
-          props: ['⚡'],
-          anim: 'zoom',
-          title: tx('Fototermólisis selectiva', 'Selective photothermolysis'),
-          caption: tx(
-            'La luz busca la melanina del pelo, se convierte en calor y destruye el folículo sin dañar la piel.',
-            'The light targets the melanin in the hair, turns into heat and destroys the follicle without harming the skin.',
-          ),
-        },
-        {
-          emoji: '🌱',
-          props: ['🔁'],
-          anim: 'float',
-          title: tx('Solo en fase de crecimiento', 'Only in the growth phase'),
-          caption: tx(
-            'Solo funciona en el pelo en fase anágena. Por eso hacen falta varias sesiones separadas varias semanas.',
-            'It only works on hair in the anagen phase. That is why you need several sessions weeks apart.',
-          ),
-          question: {
-            question: tx('¿Por qué hacen falta varias sesiones?', 'Why are several sessions needed?'),
-            options: [
-              tx('Porque la máquina es poco potente', 'Because the machine is weak'),
-              tx('Porque solo se elimina el pelo en fase de crecimiento', 'Because only hair in the growth phase is destroyed'),
-              tx('Para cobrar más', 'To charge more'),
-            ],
-            answer: 1,
-            explain: tx('En cada sesión solo una parte del vello está en anágena.', 'At each session only part of the hair is in anagen.'),
-          },
-        },
-        {
-          emoji: '🪒',
-          props: ['🚫', '🕯️'],
-          anim: 'slide',
-          title: tx('Rasurar, nunca arrancar', 'Shave, never pluck'),
-          caption: tx(
-            'Pide a la clienta que se rasure 24 horas antes. Nada de cera ni pinzas desde 4 semanas antes.',
-            'Ask the client to shave 24 hours before. No waxing or tweezing for 4 weeks before.',
-          ),
-          question: {
-            question: tx('Antes de una sesión, la clienta debe...', 'Before a session, the client should...'),
-            options: [tx('Depilarse con cera', 'Wax'), tx('Rasurarse', 'Shave'), tx('Dejar el vello largo', 'Leave the hair long')],
-            answer: 1,
-            explain: tx('Con cera se arranca la raíz, que es justo donde actúa el láser.', 'Waxing pulls out the root, which is exactly what the laser targets.'),
-          },
-        },
-        {
-          emoji: '🕶️',
-          props: ['👁️'],
-          anim: 'pulse',
-          title: tx('Gafas para las dos', 'Goggles for both'),
-          caption: tx(
-            'Clienta y profesional llevan gafas homologadas para la longitud de onda del equipo. Sin excepciones.',
-            'Client and practitioner wear goggles rated for the device wavelength. No exceptions.',
-          ),
-        },
-      ],
+      kind: 'lab',
+      lab: 'laser',
+      title: tx('Práctica guiada: ajusta el láser', 'Guided practice: set up the laser'),
     },
     {
       kind: 'flashcards',

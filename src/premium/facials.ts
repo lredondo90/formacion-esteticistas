@@ -16,62 +16,9 @@ export const facials: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('Así trabaja un peeling químico', 'How a chemical peel works'),
-      scenes: [
-        {
-          emoji: '🧪',
-          props: ['🍋', '🍎'],
-          anim: 'zoom',
-          title: tx('Ácidos que renuevan', 'Acids that renew'),
-          caption: tx(
-            'Un peeling aplica un ácido que separa las células muertas y estimula la renovación de la piel.',
-            'A peel applies an acid that loosens dead cells and boosts skin renewal.',
-          ),
-        },
-        {
-          emoji: '🔬',
-          props: ['💧'],
-          anim: 'pulse',
-          title: tx('Cada ácido, su piel', 'Each acid, its skin'),
-          caption: tx(
-            'Glicólico para luminosidad y textura; salicílico para piel grasa o con acné; mandélico para pieles sensibles.',
-            'Glycolic for glow and texture; salicylic for oily or acne-prone skin; mandelic for sensitive skin.',
-          ),
-          question: {
-            question: tx('Piel grasa con poros obstruidos: ¿qué ácido eliges?', 'Oily skin with clogged pores: which acid?'),
-            options: [tx('Salicílico', 'Salicylic'), tx('Hialurónico', 'Hyaluronic'), tx('Ninguno', 'None')],
-            answer: 0,
-            explain: tx('El salicílico es liposoluble: entra en el poro y lo limpia por dentro.', 'Salicylic is oil-soluble: it gets into the pore and clears it from inside.'),
-          },
-        },
-        {
-          emoji: '⏱️',
-          props: ['👀'],
-          anim: 'spin',
-          title: tx('Tiempo y observación', 'Timing and observation'),
-          caption: tx(
-            'Controla el tiempo con cronómetro y no quites la vista de la piel: si aparece blanqueo o mucho ardor, neutraliza.',
-            'Time it with a stopwatch and keep watching the skin: if it frosts or burns a lot, neutralise.',
-          ),
-        },
-        {
-          emoji: '☀️',
-          props: ['🧴', '🚫'],
-          anim: 'float',
-          title: tx('Protección solar obligatoria', 'Sunscreen is a must'),
-          caption: tx(
-            'Después del peeling la piel es muy sensible al sol: SPF 50 a diario y nada de rayos UVA.',
-            'After a peel the skin is very sun-sensitive: SPF 50 every day and no sunbeds.',
-          ),
-          question: {
-            question: tx('¿Cuál es el mejor momento del año para peelings medios?', 'What is the best time of year for medium peels?'),
-            options: [tx('Verano', 'Summer'), tx('Otoño e invierno', 'Autumn and winter'), tx('Da igual', 'It does not matter')],
-            answer: 1,
-            explain: tx('Con menos sol hay menos riesgo de manchas tras el tratamiento.', 'Less sun means less risk of pigmentation after treatment.'),
-          },
-        },
-      ],
+      kind: 'lab',
+      lab: 'facials',
+      title: tx('Práctica guiada: protocolo de higiene facial', 'Guided practice: deep-cleansing facial protocol'),
     },
     {
       kind: 'flashcards',

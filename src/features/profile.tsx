@@ -14,7 +14,7 @@ const completed = (p: Progress) => Object.values(p.courses).filter((c) => c.done
 
 const BADGES: Badge[] = [
   { id: 'start', emoji: '🌱', name: tx('Primer paso', 'First step'), how: tx('Completa tu primera lección', 'Complete your first lesson'), earned: (p) => (p.log?.length ?? 0) > 0 },
-  { id: 'video', emoji: '🎬', name: tx('Cinéfila', 'Movie buff'), how: tx('Termina 5 vídeos interactivos', 'Finish 5 interactive videos'), earned: (p) => count(p.log, 'video') >= 5 },
+  { id: 'lab', emoji: '✋', name: tx('Manos a la obra', 'Hands-on'), how: tx('Termina 5 prácticas guiadas', 'Finish 5 guided practices'), earned: (p) => count(p.log, 'lab') >= 5 },
   { id: 'cases', emoji: '🕵️', name: tx('Detective de cabina', 'Treatment-room detective', 'Detective de gabinete'), how: tx('Resuelve 5 casos o simulaciones', 'Solve 5 cases or simulations'), earned: (p) => count(p.log, 'case') + count(p.log, 'branch') >= 5 },
   { id: 'course1', emoji: '🎓', name: tx('Graduada', 'Graduate'), how: tx('Completa un curso', 'Complete a course'), earned: (p) => completed(p) >= 1 },
   { id: 'course3', emoji: '🏅', name: tx('Especialista', 'Specialist'), how: tx('Completa 3 cursos', 'Complete 3 courses'), earned: (p) => completed(p) >= 3 },
@@ -29,7 +29,7 @@ const BADGES: Badge[] = [
 type Challenge = { emoji: string; text: Text; goal: number; progress: (week: Activity[]) => number }
 
 const CHALLENGES: Challenge[] = [
-  { emoji: '🎬', text: tx('Termina 3 vídeos interactivos', 'Finish 3 interactive videos'), goal: 3, progress: (w) => count(w, 'video') },
+  { emoji: '✋', text: tx('Termina 3 prácticas guiadas', 'Finish 3 guided practices'), goal: 3, progress: (w) => count(w, 'lab') },
   { emoji: '🕵️', text: tx('Resuelve 4 casos o simulaciones', 'Solve 4 cases or simulations'), goal: 4, progress: (w) => count(w, 'case') + count(w, 'branch') },
   { emoji: '⭐', text: tx('Gana 100 puntos esta semana', 'Earn 100 points this week'), goal: 100, progress: (w) => w.reduce((n, a) => n + a.p, 0) },
   { emoji: '📅', text: tx('Aprende 4 días distintos', 'Study on 4 different days'), goal: 4, progress: (w) => new Set(w.map((a) => a.d)).size },

@@ -3,6 +3,8 @@ import { COURSES, type Course, type Step } from './courses'
 import { ALL_ACCESS_PRICE, formatPrice, LOCALES, t, tr, type Locale } from './i18n'
 import { Branch, Hotspot, VideoLesson } from './interactive'
 import { BrowLab } from './labs/BrowLab'
+import { GuidedLab } from './labs/engine'
+import { LABS } from './labs'
 import { load, save } from './storage'
 import { startCheckout } from './services'
 import { AppContext, today, type AppState, type Plan, type Progress } from './state'
@@ -462,7 +464,7 @@ function StepView({ step, locale, onSolved }: { step: Step; locale: Locale; onSo
     case 'branch':
       return <Branch step={step} locale={locale} onSolved={onSolved} />
     case 'lab':
-      return <BrowLab locale={locale} onSolved={onSolved} />
+      return step.lab === 'brows' ? <BrowLab locale={locale} onSolved={onSolved} /> : <GuidedLab def={LABS[step.lab]} locale={locale} onSolved={onSolved} />
   }
 }
 

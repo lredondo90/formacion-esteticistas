@@ -16,70 +16,9 @@ export const sales: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('Vender sin presionar', 'Selling without pressure'),
-      scenes: [
-        {
-          emoji: '👂',
-          props: ['💬'],
-          anim: 'zoom',
-          title: tx('Primero escucha', 'Listen first'),
-          caption: tx(
-            'Vender en estética es ayudar a decidir. La clienta tiene que hablar más que tú en la consulta.',
-            'Selling in beauty means helping someone decide. The client should talk more than you during the consultation.',
-          ),
-        },
-        {
-          emoji: '❓',
-          props: ['🤔'],
-          anim: 'pulse',
-          title: tx('Preguntas abiertas', 'Open questions'),
-          caption: tx(
-            'Pregunta "¿qué te gustaría mejorar?" en lugar de "¿quieres un facial?". Las preguntas abiertas descubren lo que de verdad le importa.',
-            'Ask "what would you like to improve?" instead of "do you want a facial?". Open questions uncover what really matters to her.',
-          ),
-          question: {
-            question: tx('¿Cuál es una pregunta abierta?', 'Which is an open question?'),
-            options: [
-              tx('"¿Quieres el bono?"', '"Do you want the package?"'),
-              tx('"¿Qué es lo que más te preocupa de tu piel?"', '"What concerns you most about your skin?"'),
-              tx('"¿Te va bien el martes?"', '"Does Tuesday work?"'),
-            ],
-            answer: 1,
-            explain: tx('No se responde con sí o no: invita a contar.', 'It cannot be answered yes or no: it invites her to share.'),
-          },
-        },
-        {
-          emoji: '🎯',
-          props: ['📋'],
-          anim: 'slide',
-          title: tx('Recomienda un plan', 'Recommend a plan'),
-          caption: tx(
-            'Resume lo que te ha dicho y propone un plan con resultados y plazos: "En 6 sesiones verás la piel más uniforme".',
-            'Sum up what she told you and propose a plan with results and timing: "In 6 sessions your skin will look more even."',
-          ),
-        },
-        {
-          emoji: '🛡️',
-          props: ['💶'],
-          anim: 'float',
-          title: tx('Las objeciones son preguntas', 'Objections are questions'),
-          caption: tx(
-            '"Es caro" casi siempre significa "no veo claro el valor". Explica qué incluye y ofrece opciones.',
-            '"It\'s expensive" usually means "I don\'t see the value yet". Explain what it includes and offer options.',
-          ),
-          question: {
-            question: tx('La clienta dice "es caro". ¿Qué haces?', 'The client says "it\'s expensive". What do you do?'),
-            options: [
-              tx('Bajar el precio enseguida', 'Lower the price straight away'),
-              tx('Explicar el valor y ofrecer opciones de pago o un plan más corto', 'Explain the value and offer payment options or a shorter plan'),
-              tx('Cambiar de tema', 'Change the subject'),
-            ],
-            answer: 1,
-            explain: tx('Defiende tu precio con valor y da alternativas, sin regalar tu trabajo.', 'Defend your price with value and give alternatives, without giving your work away.'),
-          },
-        },
-      ],
+      kind: 'lab',
+      lab: 'sales',
+      title: tx('Práctica guiada: una consulta que vende', 'Guided practice: a consultation that sells'),
     },
     {
       kind: 'branch',

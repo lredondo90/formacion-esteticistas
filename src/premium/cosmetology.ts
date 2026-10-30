@@ -16,66 +16,9 @@ export const cosmetology: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('Cómo leer una etiqueta', 'How to read a label'),
-      scenes: [
-        {
-          emoji: '🏷️',
-          props: ['🔍'],
-          anim: 'zoom',
-          title: tx('La lista INCI', 'The INCI list'),
-          caption: tx(
-            'Todos los cosméticos llevan la lista de ingredientes con nombres internacionales, llamada INCI.',
-            'Every cosmetic lists its ingredients with international names, called INCI.',
-          ),
-        },
-        {
-          emoji: '📉',
-          props: ['1️⃣', '2️⃣'],
-          anim: 'slide',
-          title: tx('De más a menos', 'From most to least'),
-          caption: tx(
-            'Los ingredientes aparecen de mayor a menor concentración. Por debajo del 1 %, pueden ir en cualquier orden.',
-            'Ingredients are listed from highest to lowest concentration. Below 1% they can be in any order.',
-          ),
-          question: {
-            question: tx('Si "Aqua" es el primero, significa que...', 'If "Aqua" comes first, it means...'),
-            options: [
-              tx('El producto lleva poca agua', 'There is little water'),
-              tx('El agua es el ingrediente principal', 'Water is the main ingredient'),
-              tx('No significa nada', 'It means nothing'),
-            ],
-            answer: 1,
-            explain: tx('El primer ingrediente es el que está en mayor cantidad.', 'The first ingredient is the one present in the largest amount.'),
-          },
-        },
-        {
-          emoji: '⚖️',
-          props: ['🍋', '🧼'],
-          anim: 'pulse',
-          title: tx('El pH de la piel', 'Skin pH'),
-          caption: tx(
-            'La piel sana es ligeramente ácida, con un pH de 4,5 a 5,5. Los limpiadores muy alcalinos alteran la barrera.',
-            'Healthy skin is slightly acidic, pH 4.5 to 5.5. Very alkaline cleansers disrupt the barrier.',
-          ),
-          question: {
-            question: tx('¿Cuál es el pH de la piel sana?', 'What is the pH of healthy skin?'),
-            options: [tx('Entre 4,5 y 5,5', '4.5 to 5.5'), tx('7, neutro', '7, neutral'), tx('Entre 8 y 9', '8 to 9')],
-            answer: 0,
-            explain: tx('Este "manto ácido" protege frente a bacterias y deshidratación.', 'This "acid mantle" protects against bacteria and dehydration.'),
-          },
-        },
-        {
-          emoji: '🫙',
-          props: ['💧', '🫒'],
-          anim: 'float',
-          title: tx('Texturas', 'Textures'),
-          caption: tx(
-            'Emulsión O/W: aceite en agua, ligera, para pieles grasas. W/O: agua en aceite, más nutritiva, para pieles secas.',
-            'O/W emulsion: oil in water, light, for oily skin. W/O: water in oil, richer, for dry skin.',
-          ),
-        },
-      ],
+      kind: 'lab',
+      lab: 'cosmetology',
+      title: tx('Práctica guiada: formula y receta activos', 'Guided practice: formulate and prescribe actives'),
     },
     {
       kind: 'flashcards',

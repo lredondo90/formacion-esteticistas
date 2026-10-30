@@ -16,70 +16,9 @@ export const nails: Course = {
   certificate: true,
   steps: [
     {
-      kind: 'video',
-      title: tx('La preparación perfecta', 'The perfect prep'),
-      scenes: [
-        {
-          emoji: '🧼',
-          props: ['🖐️'],
-          anim: 'zoom',
-          title: tx('Higiene primero', 'Hygiene first'),
-          caption: tx(
-            'Lávate las manos, desinfecta las de la clienta y revisa las uñas: si ves hongos o infección, no se trabaja.',
-            "Wash your hands, sanitise the client's hands and check the nails: if you see fungus or infection, don't work.",
-          ),
-        },
-        {
-          emoji: '🪵',
-          props: ['💧'],
-          anim: 'slide',
-          title: tx('Cutícula', 'Cuticle'),
-          caption: tx(
-            'Empuja la cutícula con suavidad y retira solo la piel muerta adherida a la uña. Nunca cortes piel viva.',
-            'Gently push back the cuticle and remove only the dead skin stuck to the nail. Never cut living skin.',
-          ),
-          question: {
-            question: tx('¿Qué parte de la cutícula se retira?', 'Which part of the cuticle do you remove?'),
-            options: [
-              tx('Toda, para que dure más', 'All of it, so it lasts longer'),
-              tx('Solo la piel muerta pegada a la lámina', 'Only the dead skin stuck to the plate'),
-              tx('Ninguna', 'None'),
-            ],
-            answer: 1,
-            explain: tx('La cutícula viva protege de infecciones: solo se retira la piel muerta.', 'The living cuticle protects against infection: only remove dead skin.'),
-          },
-        },
-        {
-          emoji: '🗂️',
-          props: ['✨'],
-          anim: 'float',
-          title: tx('Matificar', 'Buff'),
-          caption: tx(
-            'Con una lima suave de grano 180-240 quita el brillo de la lámina, sin adelgazarla.',
-            'With a soft 180–240 grit file, remove the shine from the nail plate without thinning it.',
-          ),
-        },
-        {
-          emoji: '🧴',
-          props: ['💨'],
-          anim: 'pulse',
-          title: tx('Deshidratar y primer', 'Dehydrate and prime'),
-          caption: tx(
-            'Retira el polvo, aplica deshidratador y después primer. Así el producto se adhiere y no se levanta.',
-            'Remove the dust, apply dehydrator and then primer. That way the product bonds and does not lift.',
-          ),
-          question: {
-            question: tx('¿Por qué se levanta el gel a los pocos días?', 'Why does gel lift after a few days?'),
-            options: [
-              tx('Por una mala preparación de la uña', 'Poor nail prep'),
-              tx('Porque la lámpara era muy potente', 'The lamp was too strong'),
-              tx('Por el color elegido', 'The colour chosen'),
-            ],
-            answer: 0,
-            explain: tx('Grasa, restos de cutícula o brillo en la lámina son la causa nº 1 de levantamientos.', 'Oil, cuticle residue or shine on the plate are the No. 1 cause of lifting.'),
-          },
-        },
-      ],
+      kind: 'lab',
+      lab: 'nails',
+      title: tx('Práctica guiada: lima y esmalta una uña', 'Guided practice: file and polish a nail'),
     },
     {
       kind: 'hotspot',
