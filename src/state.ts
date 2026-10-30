@@ -18,6 +18,8 @@ export type AppState = {
   purchases: string[]
   plan: Plan
   pro: boolean
+  // Signed-in student, or null (also when accounts are not configured).
+  user: { id: string; email: string } | null
   certs: CertData[]
   addActivity: (kind: string, points: number) => void
   addCert: (cert: CertData) => void

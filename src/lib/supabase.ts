@@ -12,4 +12,7 @@ export const supabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey)
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabasePublishableKey || 'sb_publishable_placeholder',
+  // PKCE returns the login code in the query string (?code=…), so it does not clash with the
+  // app's hash routes (#/gestor…) after signing in with Google or following an email link.
+  { auth: { flowType: 'pkce' } },
 )
