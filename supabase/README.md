@@ -12,6 +12,7 @@ Aplícalas en orden en el proyecto de Supabase (SQL editor o `supabase db push`)
 | `202610290006_manager_mvp.sql` | Perfiles, configuración del centro, horario y festivos, cabinas, reglas servicio/profesional/cabina, invitaciones, reservas atómicas en servidor, reserva online pública, cobros inmutables, cola de avisos, consentimientos, notas de salud, lista de espera, auditoría, supresión y exportación |
 | `202610290007_function_hardening.sql` | Ajustes de permisos de funciones que pide el asesor de seguridad de Supabase |
 | `202610290008_business_profitability.sql` | Etapa 4: stock solo por movimientos (`record_stock_movement`, coste medio), materiales por servicio que se descuentan al realizar la cita, comisión por profesional, categorías de gasto e informe `business_report` |
+| `202610300009_academy_accounts.sql` | Academia: `academy_entitlements` (lo que ha pagado cada alumna; solo lo escribe el webhook de Stripe) y `academy_progress` (progreso y certificados de cada alumna, para seguir en cualquier dispositivo) |
 
 ## Reglas que garantiza la base de datos
 - Toda la información pertenece a un centro y RLS impide ver otro centro.
@@ -36,7 +37,6 @@ Activa la confirmación de correo y añade a Authentication → URL Configuratio
 - Revisión de seguridad externa de las políticas RLS y funciones `security definer`.
 - Textos legales: aviso de privacidad del centro, base jurídica, contratos de encargado y retención.
 - Copias de seguridad y prueba de restauración (plan de pago de Supabase).
-- Webhook de Stripe para la academia (el desbloqueo de cursos sigue en modo demostración).
 
 ## Entrar con Google
 El gestor tiene el botón «Continuar con Google» (Supabase Auth con flujo PKCE). Para activarlo:
@@ -45,3 +45,9 @@ El gestor tiene el botón «Continuar con Google» (Supabase Auth con flujo PKCE
 3. En Supabase → Authentication → URL Configuration, pon la web de producción como *Site URL* y añade en *Redirect URLs* `https://<tu-dominio>/**` y, para las vistas previas de Vercel, `https://*-<equipo>.vercel.app/**`.
 
 Las invitaciones funcionan igual: si te invitan con tu Gmail, entra con Google usando esa misma cuenta.
+
+## Cobros de la academia (Stripe)
+1. En Stripe crea un producto con precio para cada curso, el pase completo y Aula Pro mensual y anual. Copia cada *Price id* (`price_…`) en Vercel: `STRIPE_PRICE_COURSE_<ID>`, `STRIPE_PRICE_ALL_ACCESS`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`.
+2. En Vercel añade `STRIPE_SECRET_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `APP_URL` (la dirección de la web).
+3. En Stripe → Developers → Webhooks añade el endpoint `https://<tu-web>/api/stripe-webhook` con los eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.updated` y `customer.subscription.deleted`. Copia el *Signing secret* (`whsec_…`) en `STRIPE_WEBHOOK_SECRET`.
+4. Prueba primero con las claves de modo prueba (`sk_test_…`) y la tarjeta `4242 4242 4242 4242`.

@@ -1,3 +1,5 @@
+import { supabase, supabaseConfigured } from './lib/supabase'
+
 // Calls to the serverless functions in /api. They answer { demo: true } when the keys are not
 // configured, and do not exist under `npm run dev`; both cases fall back to demo mode.
 
@@ -67,12 +69,25 @@ export function parseCertificate(payload: string): CertData | null {
   }
 }
 
-// Starts a real Stripe checkout when the server is configured; otherwise returns false (demo mode).
-export async function startCheckout(product: string, locale: string): Promise<boolean> {
-  const res = await callApi<{ url: string }>('/api/checkout', { product, locale, origin: location.origin })
-  if ('url' in res && res.url) {
-    location.href = res.url
-    return true
+// Starts a real Stripe checkout for the signed-in student. 'demo' means the server has no Stripe
+// keys (or does not exist, as under `npm run dev`); 'login' means her session has expired.
+export async function startCheckout(product: string, locale: string): Promise<'redirect' | 'demo' | 'login' | 'error'> {
+  const token = supabaseConfigured ? (await supabase.auth.getSession()).data.session?.access_token : undefined
+  try {
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ product, locale }),
+    })
+    if (!(res.headers.get('content-type') ?? '').includes('application/json')) return 'demo'
+    const data = (await res.json()) as { url?: string; demo?: boolean; error?: string }
+    if (data.url) {
+      location.href = data.url
+      return 'redirect'
+    }
+    if (data.demo) return 'demo'
+    return res.status === 401 ? 'login' : 'error'
+  } catch {
+    return 'demo'
   }
-  return false
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { formatPrice, sayer, t, type Locale } from '../i18n'
 import { startCheckout } from '../services'
+import { accountsEnabled } from '../account'
 import { useApp, type Plan } from '../state'
 import { DemoNote, Modal, PageHead } from './ui'
 
@@ -18,13 +19,20 @@ function price(p: { eur: number; usd: number }, locale: Locale) {
 }
 
 export function PlansPage() {
-  const { locale, plan, setPlan, go } = useApp()
+  const { locale, plan, setPlan, go, user } = useApp()
   const s = sayer(locale)
   const [demo, setDemo] = useState<Exclude<Plan, null> | null>(null)
   const [academySent, setAcademySent] = useState(false)
 
+  const [error, setError] = useState('')
   const subscribe = async (p: 'monthly' | 'yearly') => {
-    if (!(await startCheckout(p, locale))) setDemo(p)
+    if (accountsEnabled && !user) return go('entrar')
+    setError('')
+    const result = await startCheckout(p, locale)
+    if (result === 'demo' && !accountsEnabled) setDemo(p)
+    else if (result === 'demo') setError(t('paymentsOff', locale))
+    else if (result === 'login') go('entrar')
+    else if (result === 'error') setError(t('paymentError', locale))
   }
 
   const proFeatures = [
@@ -58,9 +66,11 @@ export function PlansPage() {
                   : s('Plan academia', 'Academy plan')}
             </p>
           </div>
-          <button className="ghost" onClick={() => setPlan(null)}>
-            {s('Cancelar suscripción (demo)', 'Cancel subscription (demo)')}
-          </button>
+          {!accountsEnabled && (
+            <button className="ghost" onClick={() => setPlan(null)}>
+              {s('Cancelar suscripción (demo)', 'Cancel subscription (demo)')}
+            </button>
+          )}
         </div>
       )}
       <div className="plans">
@@ -113,6 +123,7 @@ export function PlansPage() {
               {s('Anual', 'Yearly')}
             </button>
           </div>
+          {error && <p className="feedback bad">{error}</p>}
         </article>
         <article className="plan">
           <h3>{s('Academias y centros', 'Academies and salons')}</h3>
