@@ -24,6 +24,16 @@ export type BranchNode = {
   choices: { text: Text; next?: string; end?: 'good' | 'bad'; feedback?: Text }[]
 }
 
+// Pieces of an interactive theory lesson, revealed one at a time.
+export type Block =
+  | { t: 'p'; text: Text }
+  | { t: 'key'; title?: Text; items: Text[] }
+  | { t: 'steps'; title?: Text; items: Text[] }
+  | { t: 'pairs'; title?: Text; items: { a: Text; b: Text }[] }
+  | { t: 'fact'; text: Text }
+  | { t: 'warn'; text: Text }
+  | { t: 'myth'; claim: Text; myth: boolean; truth: Text }
+
 export type Step =
   | { kind: 'lesson'; title: Text; body: Text; tip?: Text; emoji: string }
   | { kind: 'flashcards'; title: Text; cards: { front: Text; back: Text }[] }
@@ -43,6 +53,9 @@ export type Step =
   | { kind: 'branch'; title: Text; start: string; nodes: Record<string, BranchNode> }
   // Hands-on guided practice: learn on an animated drawing, then do it yourself.
   | { kind: 'lab'; lab: LabId; title: Text }
+  | { kind: 'theory'; emoji: string; title: Text; blocks: Block[] }
+  // Final test: passing it (share of right answers ≥ `pass`) earns the certificate.
+  | { kind: 'exam'; title: Text; questions: Question[]; pass: number }
 
 export type Course = {
   id: string
@@ -55,6 +68,8 @@ export type Course = {
   // Paid course: the first `freeSteps` steps are a free preview.
   premium?: { eur: number; usd: number }
   freeSteps?: number
+  // Course split into modules; `start`/`end` index into `steps`.
+  modules?: { emoji: string; title: Text; start: number; end: number }[]
   certificate?: boolean
 }
 
