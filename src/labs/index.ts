@@ -4,6 +4,7 @@ import type { LabDef } from './engine'
 import { facialsLab } from './facials'
 import { laserLab } from './laser'
 import { lashesLab } from './lashes'
+import { liftingLab } from './lifting'
 import { makeupLab } from './makeup'
 import { massageLab } from './massage'
 import { nailsLab } from './nails'
@@ -14,6 +15,7 @@ import { skinLab } from './skin'
 export const LABS = {
   skin: skinLab,
   lashes: lashesLab,
+  lifting: liftingLab,
   nails: nailsLab,
   makeup: makeupLab,
   massage: massageLab,

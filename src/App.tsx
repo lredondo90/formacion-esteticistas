@@ -5,7 +5,7 @@ import { Branch, Hotspot, VideoLesson } from './interactive'
 import { BrowLab } from './labs/BrowLab'
 import { GuidedLab } from './labs/engine'
 import { LABS } from './labs'
-import { Exam, Theory } from './theory'
+import { Exam, Homework, Sheet, Theory } from './theory'
 import { load, save } from './storage'
 import { startCheckout } from './services'
 import { AuthPage } from './AuthPage'
@@ -370,7 +370,8 @@ function Catalog({
         <h3>{tr(c.title, locale)}</h3>
         <p>{tr(c.summary, locale)}</p>
         <p className="meta">
-          {c.minutes >= 60 ? `${Math.floor(c.minutes / 60)} h${c.minutes % 60 ? ` ${c.minutes % 60} min` : ''}` : `${c.minutes} ${t('minutes', locale)}`}
+          {duration(c.minutes, locale)}
+          {c.practiceMinutes ? ` ${say('de teoría', 'of theory')} + ${duration(c.practiceMinutes, locale)} ${say('de práctica', 'of practice')}` : ''}
           {c.modules
             ? ` · ${c.modules.length} ${say('módulos', 'modules')} · ${say('examen final', 'final exam')}`
             : available && ` · ${c.steps.length} ${t('steps', locale)}`}
@@ -380,6 +381,17 @@ function Catalog({
         {c.modules && (
           <details className="syllabus">
             <summary>{say('Ver temario', 'See syllabus')}</summary>
+            {c.outcomes && (
+              <>
+                <p className="syllabus-head">{say('Al terminar sabrás', 'By the end you will')}</p>
+                <ul className="syllabus-list">
+                  {c.outcomes.map((o, i) => (
+                    <li key={i}>✓ {tr(o, locale)}</li>
+                  ))}
+                </ul>
+                <p className="syllabus-head">{say('Módulos', 'Modules')}</p>
+              </>
+            )}
             <ol>
               {c.modules.map((m, i) => (
                 <li key={i}>
@@ -388,6 +400,16 @@ function Catalog({
               ))}
               <li>📝 {say('Examen final y certificado', 'Final exam and certificate')}</li>
             </ol>
+            {c.includes && (
+              <>
+                <p className="syllabus-head">{say('Incluye', 'Includes')}</p>
+                <ul className="syllabus-list">
+                  {c.includes.map((o, i) => (
+                    <li key={i}>🎁 {tr(o, locale)}</li>
+                  ))}
+                </ul>
+              </>
+            )}
           </details>
         )}
         {available && (
@@ -540,7 +562,7 @@ function Player({
 
   const next = () => {
     const nextIndex = index + 1
-    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'exam' ? 50 : step.kind === 'lab' ? 25 : step.kind === 'video' ? 15 : needsSolving ? 10 : 2, step.kind)
+    onProgress(nextIndex, nextIndex >= course.steps.length, step.kind === 'exam' ? 50 : step.kind === 'homework' ? 40 : step.kind === 'lab' ? 25 : step.kind === 'video' ? 15 : needsSolving ? 10 : 2, step.kind)
     setIndex(nextIndex)
     setSolved(false)
   }
@@ -610,6 +632,10 @@ function Player({
   )
 }
 
+function duration(minutes: number, locale: Locale) {
+  return minutes >= 60 ? `${Math.floor(minutes / 60)} h${minutes % 60 ? ` ${minutes % 60} min` : ''}` : `${minutes} ${t('minutes', locale)}`
+}
+
 function StepView({ step, locale, onSolved }: { step: Step; locale: Locale; onSolved: () => void }) {
   switch (step.kind) {
     case 'lesson':
@@ -641,6 +667,10 @@ function StepView({ step, locale, onSolved }: { step: Step; locale: Locale; onSo
       return <Theory step={step} locale={locale} onSolved={onSolved} />
     case 'exam':
       return <Exam step={step} locale={locale} onSolved={onSolved} />
+    case 'homework':
+      return <Homework step={step} locale={locale} onSolved={onSolved} />
+    case 'sheet':
+      return <Sheet step={step} locale={locale} onSolved={onSolved} />
     case 'lab':
       return step.lab === 'brows' ? <BrowLab locale={locale} onSolved={onSolved} /> : <GuidedLab def={LABS[step.lab]} locale={locale} onSolved={onSolved} />
   }
