@@ -15,6 +15,8 @@ function useQr(url: string) {
   return src
 }
 
+const hours = (minutes: number, locale: string) => (Math.round((minutes / 60) * 2) / 2).toLocaleString(locale)
+
 function CertificateSheet({ cert, course }: { cert: CertData; course: Course }) {
   const { locale } = useApp()
   const s = sayer(locale)
@@ -31,8 +33,14 @@ function CertificateSheet({ cert, course }: { cert: CertData; course: Course }) 
         {course.emoji} {tr(course.title, locale)}
       </h3>
       <p className="cert-meta">
-        {course.minutes} {t('minutes', locale)} · {date}
+        {hours(course.minutes + (course.practiceMinutes ?? 0), locale)} h{' '}
+        {course.practiceMinutes ? s(`(${hours(course.practiceMinutes, locale)} h de práctica)`, `(${hours(course.practiceMinutes, locale)} h of practice)`) : ''} · {date}
       </p>
+      {course.modules && (
+        <p className="cert-modules">
+          {course.modules.map((m) => tr(m.title, locale)).join(' · ')}
+        </p>
+      )}
       <div className="cert-verify">
         {qr && <img src={qr} alt="QR" width={96} height={96} />}
         <div>

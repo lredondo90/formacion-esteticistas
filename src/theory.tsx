@@ -242,3 +242,98 @@ export function Exam({ step, locale, onSolved }: Props<'exam'>) {
     </div>
   )
 }
+
+// Practice away from the screen: the student ticks each step as she does it on a mannequin or a
+// model, then sends her photos for review from the Practices page.
+export function Homework({ step, locale, onSolved }: Props<'homework'>) {
+  const s = sayer(locale)
+  const [done, setDone] = useState<Set<number>>(new Set())
+  const finished = done.size === step.steps.length
+
+  useEffect(() => {
+    if (finished) onSolved()
+  }, [finished, onSolved])
+
+  const toggle = (i: number) =>
+    setDone((d) => {
+      const n = new Set(d)
+      if (n.has(i)) n.delete(i)
+      else n.add(i)
+      return n
+    })
+
+  return (
+    <div className="homework">
+      <p className="eyebrow">
+        🧑‍🎨 {s('Práctica real', 'Real practice')} · ⏱ {step.minutes} min
+      </p>
+      <h2>{tr(step.title, locale)}</h2>
+      <p>{tr(step.intro, locale)}</p>
+      <div className="th-box">
+        <h4>🧰 {s('Necesitas', 'You need')}</h4>
+        <ul className="hw-materials">
+          {step.materials.map((m, i) => (
+            <li key={i}>{tr(m, locale)}</li>
+          ))}
+        </ul>
+      </div>
+      <h4>{s('Márcalo a medida que lo hagas', 'Tick each step as you do it')}</h4>
+      <ol className="hw-steps">
+        {step.steps.map((t, i) => (
+          <li key={i}>
+            <label className={done.has(i) ? 'on' : ''}>
+              <input type="checkbox" checked={done.has(i)} onChange={() => toggle(i)} />
+              <span>{tr(t, locale)}</span>
+            </label>
+          </li>
+        ))}
+      </ol>
+      <div className="th-box th-fact">
+        <h4>📸 {s('Fotos para enviar a revisión', 'Photos to send for review')}</h4>
+        <ul className="hw-materials">
+          {step.photos.map((m, i) => (
+            <li key={i}>{tr(m, locale)}</li>
+          ))}
+        </ul>
+        <a className="secondary hw-upload" href="#/practicas">
+          {s('Subir mis fotos en Prácticas', 'Upload my photos in Practices')} →
+        </a>
+      </div>
+      {!finished && (
+        <p className="hint">
+          {s(`Llevas ${done.size} de ${step.steps.length} pasos.`, `${done.size} of ${step.steps.length} steps done.`)}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// A protocol sheet to print or save as PDF and keep in the treatment room.
+export function Sheet({ step, locale, onSolved }: Props<'sheet'>) {
+  const s = sayer(locale)
+  useEffect(() => {
+    onSolved()
+  }, [onSolved])
+  return (
+    <div>
+      <div className="sheet printable">
+        <p className="eyebrow">📄 {s('Ficha para imprimir', 'Printable sheet')}</p>
+        <h2>{tr(step.title, locale)}</h2>
+        <p>{tr(step.intro, locale)}</p>
+        {step.sections.map((sec, i) => (
+          <section key={i}>
+            <h4>{tr(sec.title, locale)}</h4>
+            <ul>
+              {sec.items.map((it, j) => (
+                <li key={j}>☐ {tr(it, locale)}</li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+      <button className="secondary" onClick={() => window.print()}>
+        🖨️ {s('Imprimir o guardar en PDF', 'Print or save as PDF')}
+      </button>
+    </div>
+  )
+}

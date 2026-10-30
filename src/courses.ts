@@ -56,6 +56,11 @@ export type Step =
   | { kind: 'theory'; emoji: string; title: Text; blocks: Block[] }
   // Final test: passing it (share of right answers ≥ `pass`) earns the certificate.
   | { kind: 'exam'; title: Text; questions: Question[]; pass: number }
+  // Real practice away from the screen (mannequin or model), ticked off step by step, with photos
+  // to send for review on the Practices page.
+  | { kind: 'homework'; title: Text; intro: Text; minutes: number; materials: Text[]; steps: Text[]; photos: Text[] }
+  // A printable protocol sheet to keep in the treatment room.
+  | { kind: 'sheet'; title: Text; intro: Text; sections: { title: Text; items: Text[] }[] }
 
 export type Course = {
   id: string
@@ -63,7 +68,9 @@ export type Course = {
   color: string
   title: Text
   summary: Text
+  // Time on screen. `practiceMinutes` is the hands-on practice the course asks for on top.
   minutes: number
+  practiceMinutes?: number
   steps: Step[]
   // Paid course: the first `freeSteps` steps are a free preview.
   premium?: { eur: number; usd: number }
@@ -71,6 +78,9 @@ export type Course = {
   // Course split into modules; `start`/`end` index into `steps`.
   modules?: { emoji: string; title: Text; start: number; end: number }[]
   certificate?: boolean
+  // What the student can do at the end, and what the course includes besides the lessons.
+  outcomes?: Text[]
+  includes?: Text[]
 }
 
 const FREE_COURSES: Course[] = [
