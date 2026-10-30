@@ -37,3 +37,11 @@ Activa la confirmación de correo y añade a Authentication → URL Configuratio
 - Textos legales: aviso de privacidad del centro, base jurídica, contratos de encargado y retención.
 - Copias de seguridad y prueba de restauración (plan de pago de Supabase).
 - Webhook de Stripe para la academia (el desbloqueo de cursos sigue en modo demostración).
+
+## Entrar con Google
+El gestor tiene el botón «Continuar con Google» (Supabase Auth con flujo PKCE). Para activarlo:
+1. En [Google Cloud Console](https://console.cloud.google.com/apis/credentials) crea un «ID de cliente de OAuth» de tipo *Aplicación web*. En «URI de redirección autorizados» pon `https://<ref>.supabase.co/auth/v1/callback`.
+2. En Supabase → Authentication → Sign In / Providers → Google, actívalo y pega el *Client ID* y el *Client Secret*.
+3. En Supabase → Authentication → URL Configuration, pon la web de producción como *Site URL* y añade en *Redirect URLs* `https://<tu-dominio>/**` y, para las vistas previas de Vercel, `https://*-<equipo>.vercel.app/**`.
+
+Las invitaciones funcionan igual: si te invitan con tu Gmail, entra con Google usando esa misma cuenta.
