@@ -8,6 +8,8 @@ import { LABS } from './labs'
 import { Exam, Theory } from './theory'
 import { load, save } from './storage'
 import { startCheckout } from './services'
+import { AuthPage } from './AuthPage'
+import { accountsEnabled, fetchEntitlements, fetchProgress, mergeCerts, mergeProgress, saveProgress, signOut, useSession, type Entitlements } from './account'
 import { AppContext, today, type AppState, type Plan, type Progress } from './state'
 import type { CertData } from './services'
 import { IssueCertificate, VerifyPage } from './features/certificates'
@@ -68,6 +70,12 @@ export default function App() {
   const [certs, setCerts] = useState<CertData[]>(() => load('certs', []))
   const [checkout, setCheckout] = useState<string | null>(null)
   const [route, setRoute] = useState(readRoute)
+  // With accounts, access comes only from Supabase (written by the Stripe webhook), never from
+  // this device. Without Supabase (local development) the old demo unlock is kept.
+  const session = useSession()
+  const userId = session?.user.id ?? null
+  const [remote, setRemote] = useState<Entitlements>({ purchases: [], plan: null })
+  const [synced, setSynced] = useState<string | null>(null)
 
   useEffect(() => {
     save('locale', locale)
@@ -87,27 +95,97 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  // Back from Stripe Checkout. The real unlock should come from a Stripe webhook once accounts exist.
+  // What the signed-in student has paid for.
+  useEffect(() => {
+    if (!accountsEnabled) return
+    if (!userId) {
+      setRemote({ purchases: [], plan: null })
+      return
+    }
+    void fetchEntitlements().then(setRemote)
+  }, [userId])
+
+  // On sign-in, join this device's progress with the account's; on sign-out, forget it here.
+  useEffect(() => {
+    if (!accountsEnabled || session === undefined) return
+    if (!userId) {
+      if (synced) {
+        setProgress(EMPTY)
+        setCerts([])
+        setSynced(null)
+      }
+      return
+    }
+    if (synced === userId) return
+    let cancelled = false
+    void fetchProgress(userId).then((saved) => {
+      if (cancelled) return
+      if (saved) {
+        setProgress((local) => mergeProgress(saved.progress, local))
+        setCerts((local) => mergeCerts(saved.certs, local))
+      }
+      setSynced(userId)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [session, userId, synced])
+
+  // Save progress to the account a moment after each change.
+  useEffect(() => {
+    if (!userId || synced !== userId) return
+    const timer = setTimeout(() => void saveProgress(userId, { progress, certs }), 800)
+    return () => clearTimeout(timer)
+  }, [userId, synced, progress, certs])
+
+  // Back from Stripe Checkout. Stripe tells our webhook a few seconds later, so check a few times.
   useEffect(() => {
     if (!route.startsWith('pago-ok')) return
     const product = new URLSearchParams(route.split('?')[1]).get('product')
-    if (product === 'monthly' || product === 'yearly') setPlan(product)
-    else if (product) setPurchases((p) => [...new Set([...p, product])])
-    location.hash = product === 'monthly' || product === 'yearly' ? '#/perfil' : '#/cursos'
-  }, [route])
+    const subscription = product === 'monthly' || product === 'yearly'
+    const leave = () => (location.hash = subscription ? '#/perfil' : '#/cursos')
+    if (!accountsEnabled) {
+      if (subscription) setPlan(product)
+      else if (product) setPurchases((p) => [...new Set([...p, product])])
+      leave()
+      return
+    }
+    if (!userId) return
+    let tries = 0
+    let cancelled = false
+    const check = async () => {
+      const next = await fetchEntitlements()
+      if (cancelled) return
+      setRemote(next)
+      const arrived = subscription ? next.plan !== null : next.purchases.includes(product ?? '')
+      if (arrived || ++tries >= 10) leave()
+      else setTimeout(() => void check(), 2000)
+    }
+    void check()
+    return () => {
+      cancelled = true
+    }
+  }, [route, userId])
 
-  const unlock = (product: string) => setPurchases((p) => [...new Set([...p, product])])
+  const ownedPurchases = accountsEnabled ? remote.purchases : purchases
+  const currentPlan = accountsEnabled ? remote.plan : plan
+  const unlock = (product: string) => {
+    if (!accountsEnabled) setPurchases((p) => [...new Set([...p, product])])
+  }
   const state: AppState = {
     locale,
     progress,
-    purchases,
-    plan,
-    pro: plan !== null,
+    purchases: ownedPurchases,
+    plan: currentPlan,
+    pro: currentPlan !== null,
+    user: session ? { id: session.user.id, email: session.user.email ?? '' } : null,
     certs,
     addActivity: (kind, points) =>
       setProgress((p) => ({ ...p, points: p.points + points, log: [...(p.log ?? []), { d: today(), k: kind, p: points }].slice(-500) })),
     addCert: (cert) => setCerts((list) => [...list.filter((c) => c.c !== cert.c), cert]),
-    setPlan,
+    setPlan: (p) => {
+      if (!accountsEnabled) setPlan(p)
+    },
     unlock,
     go: (r) => {
       location.hash = `#/${r}`
@@ -121,8 +199,19 @@ export default function App() {
   if (page === 'reservar') return <PublicBooking slug={route.split(/[/?]/)[1] ?? ''} />
   if (page === 'cita') return <ManageBooking token={route.split(/[/?]/)[1] ?? ''} />
 
+  // Paid courses are only shown to signed-in students.
+  const needsLogin = accountsEnabled && !session
+  const openCourse = (id: string) => {
+    const target = COURSES.find((c) => c.id === id)
+    if (target?.premium && needsLogin) state.go('entrar')
+    else setCourseId(id)
+  }
+  const buy = (target: string) => (needsLogin ? state.go('entrar') : setCheckout(target))
+
   let content
-  if (page === 'verificar') content = <VerifyPage payload={route.slice('verificar/'.length)} />
+  if (page === 'entrar') content = session ? <SignedIn locale={locale} /> : <AuthPage locale={locale} />
+  else if (route.startsWith('pago-ok')) content = <PaymentPending locale={locale} />
+  else if (page === 'verificar') content = <VerifyPage payload={route.slice('verificar/'.length)} />
   else if (course)
     content = (
       <Player
@@ -130,8 +219,8 @@ export default function App() {
         course={course}
         locale={locale}
         startAt={progress.courses[course.id]?.done ? 0 : (progress.courses[course.id]?.step ?? 0)}
-        unlocked={isUnlocked(course, purchases) || plan !== null}
-        onBuy={() => setCheckout(course.id)}
+        unlocked={isUnlocked(course, ownedPurchases) || currentPlan !== null}
+        onBuy={() => buy(course.id)}
         onExit={() => setCourseId(null)}
         onProgress={(step, done, gained, kind) =>
           setProgress((p) => ({
@@ -155,9 +244,10 @@ export default function App() {
       <Catalog
         locale={locale}
         progress={progress}
-        purchases={plan ? [...purchases, 'all'] : purchases}
-        onOpen={setCourseId}
-        onBuy={setCheckout}
+        purchases={currentPlan ? [...ownedPurchases, 'all'] : ownedPurchases}
+        showPremium={!needsLogin}
+        onOpen={openCourse}
+        onBuy={buy}
       />
     )
 
@@ -169,8 +259,20 @@ export default function App() {
             <span className="logo">💧</span> Aula Estética
           </button>
           <div className="topbar-right">
-            {plan && <span className="badge">💎 Pro</span>}
+            {currentPlan && <span className="badge">💎 Pro</span>}
             <span className="points">⭐ {progress.points} {t('points', locale)}</span>
+            {accountsEnabled &&
+              (session ? (
+                <button className="ghost account-btn" title={session.user.email} onClick={signOut}>
+                  {t('signOut', locale)}
+                </button>
+              ) : (
+                session === null && (
+                  <a className="primary small" href="#/entrar">
+                    {t('signIn', locale)}
+                  </a>
+                )
+              ))}
             <select aria-label="Idioma / Language" value={locale} onChange={(e) => setLocale(e.target.value as Locale)}>
               {LOCALES.map((l) => (
                 <option key={l.id} value={l.id}>
@@ -210,16 +312,35 @@ export default function App() {
   )
 }
 
+function SignedIn({ locale }: { locale: Locale }) {
+  useEffect(() => {
+    location.hash = '#/cursos'
+  }, [])
+  return <p className="hint center">{t('signedIn', locale)}</p>
+}
+
+function PaymentPending({ locale }: { locale: Locale }) {
+  return (
+    <div className="panel center">
+      <div className="big-emoji">⏳</div>
+      <h2>{t('paymentThanks', locale)}</h2>
+      <p>{t('paymentPending', locale)}</p>
+    </div>
+  )
+}
+
 function Catalog({
   locale,
   progress,
   purchases,
+  showPremium,
   onOpen,
   onBuy,
 }: {
   locale: Locale
   progress: Progress
   purchases: string[]
+  showPremium: boolean
   onOpen: (id: string) => void
   onBuy: (target: string) => void
 }) {
@@ -299,9 +420,24 @@ function Catalog({
         <h1>{t('heroTitle', locale)}</h1>
         <p>{t('heroBody', locale)}</p>
       </section>
-      <h2>{t('premiumCourses', locale)}</h2>
-      <p className="section-intro">{t('premiumIntro', locale)}</p>
-      {!hasAll && (
+      {!showPremium && (
+        <div className="pass login-teaser">
+          <div>
+            <strong>🔐 {t('loginTeaserTitle', locale)}</strong>
+            <p>{t('loginTeaserBody', locale)}</p>
+          </div>
+          <a className="primary" href="#/entrar">
+            {t('signInToSee', locale)}
+          </a>
+        </div>
+      )}
+      {showPremium && (
+        <>
+          <h2>{t('premiumCourses', locale)}</h2>
+          <p className="section-intro">{t('premiumIntro', locale)}</p>
+        </>
+      )}
+      {showPremium && !hasAll && (
         <div className="pass">
           <div>
             <strong>🎟️ {t('allAccessTitle', locale)} · {formatPrice(ALL_ACCESS_PRICE, locale)}</strong>
@@ -312,8 +448,8 @@ function Catalog({
           </button>
         </div>
       )}
-      <div className="grid">{premium.map(card)}</div>
-      <h2 className="section-gap">{t('freeCourses', locale)}</h2>
+      {showPremium && <div className="grid">{premium.map(card)}</div>}
+      <h2 className={showPremium ? 'section-gap' : undefined}>{t('freeCourses', locale)}</h2>
       <div className="grid">{free.map(card)}</div>
     </>
   )
@@ -333,6 +469,8 @@ function Checkout({
   const course = COURSES.find((c) => c.id === target)
   const title = course ? tr(course.title, locale) : t('allAccessTitle', locale)
   const price = course?.premium ?? ALL_ACCESS_PRICE
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
@@ -344,15 +482,24 @@ function Checkout({
           <strong>{formatPrice(price, locale)}</strong>
         </div>
         {!course && <p className="hint">{t('allAccessBody', locale)}</p>}
-        <p className="demo-note">ℹ️ {t('demoNote', locale)}</p>
+        {!accountsEnabled && <p className="demo-note">ℹ️ {t('demoNote', locale)}</p>}
+        {error && <p className="feedback bad">{error}</p>}
         <div className="actions">
           <button className="ghost" onClick={onClose}>
             {t('close', locale)}
           </button>
           <button
             className="primary"
+            disabled={busy}
             onClick={async () => {
-              if (!(await startCheckout(target, locale))) onPaid()
+              setBusy(true)
+              setError('')
+              const result = await startCheckout(target, locale)
+              setBusy(false)
+              if (result === 'demo' && !accountsEnabled) onPaid()
+              else if (result === 'demo') setError(t('paymentsOff', locale))
+              else if (result === 'login') location.hash = '#/entrar'
+              else if (result === 'error') setError(t('paymentError', locale))
             }}
           >
             {t('pay', locale)} {formatPrice(price, locale)}

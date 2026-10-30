@@ -400,3 +400,14 @@ button.mgr-table-row:hover { background: var(--m-soft); }
   .mgr-material-row { grid-template-columns: minmax(0, 1fr) 70px 40px 28px; }
   .mgr-material-row .mgr-muted { display: none; }
 }
+
+/* Sign in with Google */
+.mgr-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+  background: var(--m-surface); color: var(--m-ink); border: 1px solid var(--m-line); border-radius: 12px;
+  padding: 11px 16px; font-weight: 700; cursor: pointer;
+}
+.mgr-google:hover:not(:disabled) { border-color: var(--m-pink); }
+.mgr-google:disabled { opacity: 0.6; cursor: default; }
+.mgr-divider { display: flex; align-items: center; gap: 10px; color: var(--m-muted); font-size: 0.8rem; margin: 4px 0; }
+.mgr-divider::before, .mgr-divider::after { content: ''; flex: 1; border-top: 1px solid var(--m-line); }

@@ -39,7 +39,8 @@ La app funciona entera en modo demostración. Para activar cada servicio real, a
 | Función | Variables | Qué hace |
 |---|---|---|
 | Analizador de piel, pre-revisión de prácticas y tutor con IA | `ANTHROPIC_API_KEY` (opcional `ANTHROPIC_MODEL`) | `api/ai.ts` llama a Claude. Sin clave, la app muestra resultados de ejemplo. |
-| Cobros con Stripe | `STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_PRICE_ALL_ACCESS` y `STRIPE_PRICE_COURSE_<ID>` (p. ej. `STRIPE_PRICE_COURSE_MICROBLADING`) | `api/checkout.ts` crea la sesión de pago. Sin claves, la compra se simula. |
+| Cobros con Stripe | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_PRICE_ALL_ACCESS` y `STRIPE_PRICE_COURSE_<ID>` (p. ej. `STRIPE_PRICE_COURSE_MICROBLADING`), más `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `APP_URL` | `api/checkout.ts` crea el pago para la alumna con sesión iniciada; `api/stripe-webhook.ts` recibe el aviso de Stripe y desbloquea el curso en su cuenta (`academy_entitlements`). Sin claves de Stripe, la web dice que los pagos aún no están activos. |
+| Cuentas de alumna y progreso en la nube | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | Entrar con Google o correo en `#/entrar`. Los cursos de pago solo se ven con sesión iniciada. El progreso y los certificados se guardan en `academy_progress`. Sin Supabase (desarrollo local) la academia funciona en modo demostración. |
 | Clases en directo | `VITE_LIVE_URL` | Enlace de Zoom, Meet o YouTube Live que aparece 15 minutos antes. |
 | Plan academias | `VITE_CONTACT_EMAIL` | Email que recibe las peticiones de presupuesto. |
 | Gestor de centros (`#/gestor`) y reserva online | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | Agenda, clientes, equipo, caja y reservas en Supabase. Ver `src/manager/README.md` y `supabase/README.md`. |
