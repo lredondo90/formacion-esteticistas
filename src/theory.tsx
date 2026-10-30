@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Block, Question, Step } from './courses'
 import { sayer, tr, type Locale } from './i18n'
 
@@ -144,8 +144,7 @@ function shuffled<T>(items: T[]): T[] {
 // Final multiple-choice test. Answers are only marked at the end, like a real exam.
 export function Exam({ step, locale, onSolved }: Props<'exam'>) {
   const s = sayer(locale)
-  const [round, setRound] = useState(0)
-  const questions = useMemo<Question[]>(() => shuffled(step.questions), [step.questions, round])
+  const [questions, setQuestions] = useState<Question[]>(() => shuffled(step.questions))
   const [index, setIndex] = useState(-1)
   const [picks, setPicks] = useState<number[]>([])
   const done = index >= questions.length
@@ -204,7 +203,7 @@ export function Exam({ step, locale, onSolved }: Props<'exam'>) {
             <button
               className="primary"
               onClick={() => {
-                setRound(round + 1)
+                setQuestions(shuffled(step.questions))
                 setPicks([])
                 setIndex(0)
               }}
