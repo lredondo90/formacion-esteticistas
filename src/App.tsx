@@ -10,6 +10,7 @@ import { load, save } from './storage'
 import { startCheckout } from './services'
 import { AuthPage } from './AuthPage'
 import { Logo } from './Logo'
+import { COURSE_PHOTOS, PHOTOS, photo } from './media'
 import { accountsEnabled, fetchEntitlements, fetchProgress, mergeCerts, mergeProgress, saveProgress, signOut, useSession, type Entitlements } from './account'
 import { AppContext, today, type AppState, type Plan, type Progress } from './state'
 import type { CertData } from './services'
@@ -224,6 +225,7 @@ export default function App() {
   const buy = (target: string) => (needsLogin ? state.go('entrar') : setCheckout(target))
 
   let content
+  let home = false
   if (page === 'entrar') content = session ? <SignedIn locale={locale} /> : <AuthPage locale={locale} />
   else if (route.startsWith('pago-ok')) content = <PaymentPending locale={locale} />
   else if (page === 'verificar') content = <VerifyPage payload={route.slice('verificar/'.length)} />
@@ -268,7 +270,8 @@ export default function App() {
         <p>Esta zona es solo para la administración de Belaura.</p>
       </div>
     )
-  else
+  else {
+    home = true
     content = (
       <Catalog
         locale={locale}
@@ -279,6 +282,7 @@ export default function App() {
         onBuy={buy}
       />
     )
+  }
 
   return (
     <AppContext.Provider value={state}>
@@ -323,7 +327,7 @@ export default function App() {
           </nav>
         )}
 
-        <main className={page === 'gestor' || page === 'admin' ? 'wide' : undefined}>{content}</main>
+        <main className={page === 'gestor' || page === 'admin' ? 'wide' : home ? 'home-main' : undefined}>{content}</main>
 
         {checkout && (
           <Checkout
@@ -364,6 +368,27 @@ function PaymentPending({ locale }: { locale: Locale }) {
   )
 }
 
+function duration(minutes: number, locale: Locale) {
+  if (minutes < 60) return `${minutes} ${t('minutes', locale)}`
+  return `${Math.floor(minutes / 60)} h${minutes % 60 ? ` ${minutes % 60} min` : ''}`
+}
+
+function Cover({ id, alt, width, className }: { id?: string; alt: string; width: number; className?: string }) {
+  return (
+    <div className={`cover ${className ?? ''}`}>
+      {id && (
+        <img
+          src={photo(id, width, Math.round(width * 1.25))}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          onError={(e) => (e.currentTarget.style.display = 'none')}
+        />
+      )}
+    </div>
+  )
+}
+
 function Catalog({
   locale,
   progress,
@@ -380,11 +405,24 @@ function Catalog({
   onBuy: (target: string) => void
 }) {
   const say = sayer(locale)
-  const card = (c: Course) => {
+  const free = COURSES.filter((c) => !c.premium)
+  const premium = COURSES.filter((c) => c.premium)
+  const hasAll = purchases.includes('all')
+  const pctOf = (c: Course) => {
+    const s = progress.courses[c.id]
+    if (s?.done) return 100
+    return c.steps.length ? Math.min(100, Math.round(((s?.step ?? 0) / c.steps.length) * 100)) : 0
+  }
+  const inProgress = COURSES.filter((c) => progress.courses[c.id]?.step && !progress.courses[c.id]?.done).slice(0, 3)
+  const featured = inProgress[0]
+  const moduleCount = premium.reduce((n, c) => n + (c.modules?.length ?? 0), 0)
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+  const card = (c: Course, index: number) => {
     const state = progress.courses[c.id]
     const available = c.steps.length > 0
     const unlocked = isUnlocked(c, purchases)
-    const pct = state?.done ? 100 : available ? Math.round(((state?.step ?? 0) / c.steps.length) * 100) : 0
+    const pct = pctOf(c)
     const label = state?.done
       ? t('review', locale)
       : state?.step
@@ -392,76 +430,147 @@ function Catalog({
         : unlocked
           ? t('start', locale)
           : t('tryFree', locale)
+    const title = tr(c.title, locale)
     return (
-      <article key={c.id} className="card" style={{ '--tone': c.color } as CSSProperties}>
-        <div className="card-top">
-          <div className="monogram" aria-hidden="true">
-            {tr(c.title, locale).charAt(0)}
-          </div>
-          {c.premium && (
-            <span className={`badge ${unlocked ? 'owned' : ''}`}>
-              {unlocked ? t('unlocked', locale) : `${t('premium', locale)} · ${formatPrice(c.premium, locale)}`}
-            </span>
-          )}
-        </div>
-        <h3>{tr(c.title, locale)}</h3>
-        <p>{tr(c.summary, locale)}</p>
-        <p className="meta">
-          {c.minutes >= 60 ? `${Math.floor(c.minutes / 60)} h${c.minutes % 60 ? ` ${c.minutes % 60} min` : ''}` : `${c.minutes} ${t('minutes', locale)}`}
-          {c.modules
-            ? ` · ${c.modules.length} ${say('módulos', 'modules')} · ${say('examen final', 'final exam')}`
-            : available && ` · ${c.steps.length} ${t('steps', locale)}`}
+      <article key={c.id} className="course">
+        <button className="course-media" onClick={() => available && onOpen(c.id)} aria-label={title} disabled={!available}>
+          <Cover id={COURSE_PHOTOS[c.id]} alt="" width={640} />
+          {c.premium && unlocked && <span className="course-tag owned">{t('unlocked', locale)}</span>}
+          {c.premium && !unlocked && index === 0 && <span className="course-tag">{say('Más demandado', 'Most popular')}</span>}
+          {!c.premium && <span className="course-tag">{say('Gratis', 'Free')}</span>}
+        </button>
+        <span className="course-num">{String(index + 1).padStart(2, '0')}</span>
+        <h3>{title}</h3>
+        <p className="course-summary">{tr(c.summary, locale)}</p>
+        <p className="course-meta">
+          {duration(c.minutes, locale)}
+          {c.modules ? ` · ${c.modules.length} ${say('módulos', 'modules')}` : available && ` · ${c.steps.length} ${t('steps', locale)}`}
+          {c.certificate && ` · ${say('Certificado', 'Certificate')}`}
           {c.premium && !unlocked && (c.modules ? ` · ${say('módulo 1 gratis', 'module 1 free')}` : ` · ${c.freeSteps ?? 0} ${t('freeLessons', locale)}`)}
-          {c.certificate && ` · ${t('withCertificate', locale)}`}
         </p>
         {c.modules && (
           <details className="syllabus">
             <summary>{say('Ver temario', 'See syllabus')}</summary>
             <ol>
               {c.modules.map((m, i) => (
-                <li key={i}>
-                  {m.emoji} {tr(m.title, locale)}
-                </li>
+                <li key={i}>{tr(m.title, locale)}</li>
               ))}
-              <li>📝 {say('Examen final y certificado', 'Final exam and certificate')}</li>
+              <li>{say('Examen final y certificado', 'Final exam and certificate')}</li>
             </ol>
           </details>
         )}
-        {available && (
+        {available && pct > 0 && (
           <div className="bar">
             <div style={{ width: `${pct}%` }} />
           </div>
         )}
-        <div className="card-actions">
-          <button className="primary" disabled={!available} onClick={() => onOpen(c.id)}>
-            {available ? label : t('soon', locale)}
-          </button>
-          {c.premium && !unlocked && (
-            <button className="secondary" onClick={() => onBuy(c.id)}>
-              {t('buyCourse', locale)}
+        <div className="course-foot">
+          {c.premium && !unlocked ? <strong className="course-price">{formatPrice(c.premium, locale)}</strong> : <span />}
+          <div className="course-actions">
+            {c.premium && !unlocked && (
+              <button className="link-btn" onClick={() => onBuy(c.id)}>
+                {t('buyCourse', locale)}
+              </button>
+            )}
+            <button className="primary small" disabled={!available} onClick={() => onOpen(c.id)}>
+              {available ? label : t('soon', locale)}
             </button>
-          )}
+          </div>
         </div>
       </article>
     )
   }
 
-  const free = COURSES.filter((c) => !c.premium)
-  const premium = COURSES.filter((c) => c.premium)
-  const hasAll = purchases.includes('all')
-
   return (
-    <>
-      <section className="hero">
-        <p className="eyebrow">{t('tagline', locale)}</p>
-        <h1>{t('heroTitle', locale)}</h1>
-        <p>{t('heroBody', locale)}</p>
-        <ul className="hero-points">
-          <li>{t('heroPoint1', locale)}</li>
-          <li>{t('heroPoint2', locale)}</li>
-          <li>{t('heroPoint3', locale)}</li>
-        </ul>
+    <div className="home">
+      <section className="home-hero">
+        <div className="home-hero-text">
+          <p className="eyebrow">{t('tagline', locale)}</p>
+          <h1>
+            {say('El oficio de la belleza,', 'The craft of beauty,')} <em>{say('aprendido', 'learned')}</em>{' '}
+            {say('con calma.', 'at your own pace.')}
+          </h1>
+          <p className="home-lead">{t('heroBody', locale)}</p>
+          <div className="home-cta">
+            {showPremium ? (
+              <button className="primary big" onClick={() => scrollTo('cursos-premium')}>
+                {say('Ver los cursos', 'See the courses')}
+              </button>
+            ) : (
+              <a className="primary big" href="#/entrar">
+                {say('Crear cuenta gratis', 'Create a free account')}
+              </a>
+            )}
+            <button className="secondary big" onClick={() => scrollTo('cursos-gratis')}>
+              {say('Empezar gratis', 'Start for free')}
+            </button>
+          </div>
+          <dl className="home-proof">
+            <div>
+              <dt>{premium.length}</dt>
+              <dd>{say('cursos completos', 'complete courses')}</dd>
+            </div>
+            <div>
+              <dt>{moduleCount}+</dt>
+              <dd>{say('módulos prácticos', 'practical modules')}</dd>
+            </div>
+            <div>
+              <dt>3</dt>
+              <dd>{say('idiomas y mercados', 'languages and markets')}</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="home-hero-visual">
+          <Cover id={PHOTOS.hero} alt={say('Tratamiento facial en cabina', 'Facial treatment')} width={900} className="hero-main" />
+          <Cover id={PHOTOS.heroDetail} alt="" width={360} className="hero-detail" />
+          {featured && (
+            <button className="resume-card" onClick={() => onOpen(featured.id)}>
+              <span className="eyebrow">{say('Continúa donde lo dejaste', 'Pick up where you left off')}</span>
+              <strong>{tr(featured.title, locale)}</strong>
+              <span className="bar">
+                <span style={{ width: `${pctOf(featured)}%` }} />
+              </span>
+              <span className="resume-meta">{pctOf(featured)} %</span>
+            </button>
+          )}
+        </div>
       </section>
+
+      <div className="home-strip" aria-hidden="true">
+        <div>
+          {[...premium, ...premium].map((c, i) => (
+            <span key={i}>{tr(c.title, locale)}</span>
+          ))}
+        </div>
+      </div>
+
+      {inProgress.length > 0 && (
+        <section className="home-section">
+          <header className="section-head">
+            <div>
+              <p className="eyebrow">{say('Tu aprendizaje', 'Your learning')}</p>
+              <h2>
+                {say('Continúa', 'Keep')} <em>{say('aprendiendo', 'learning')}</em>
+              </h2>
+            </div>
+          </header>
+          <div className="continue-row">
+            {inProgress.map((c) => (
+              <button key={c.id} className="continue-item" onClick={() => onOpen(c.id)}>
+                <Cover id={COURSE_PHOTOS[c.id]} alt="" width={200} />
+                <span>
+                  <span className="eyebrow">{pctOf(c)} %</span>
+                  <strong>{tr(c.title, locale)}</strong>
+                  <span className="bar">
+                    <span style={{ width: `${pctOf(c)}%` }} />
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {!showPremium && (
         <div className="pass login-teaser">
           <div>
@@ -473,28 +582,77 @@ function Catalog({
           </a>
         </div>
       )}
+
       {showPremium && (
-        <>
-          <h2>{t('premiumCourses', locale)}</h2>
-          <p className="section-intro">{t('premiumIntro', locale)}</p>
-        </>
+        <section className="home-section" id="cursos-premium">
+          <header className="section-head">
+            <div>
+              <p className="eyebrow">{say('Formación profesional', 'Professional training')}</p>
+              <h2>
+                {say('Cursos', 'Premium')} <em>{say('premium', 'courses')}</em>
+              </h2>
+            </div>
+            <p>{t('premiumIntro', locale)}</p>
+          </header>
+          <div className="course-grid">{premium.map(card)}</div>
+        </section>
       )}
+
+      <section className="home-section home-method">
+        <Cover id={PHOTOS.mentor} alt={say('Esteticista aplicando una mascarilla', 'Esthetician applying a mask')} width={800} />
+        <div>
+          <p className="eyebrow">{say('Cómo aprendes', 'How you learn')}</p>
+          <h2>
+            {say('Sales de cada módulo sabiendo hacerlo', 'Finish every module ready to do it')} <em>{say('en cabina.', 'for real.')}</em>
+          </h2>
+          <div className="pillars">
+            <div>
+              <strong>{say('Práctica real', 'Real practice')}</strong>
+              <span>{say('Prácticas guiadas paso a paso y casos de cabina.', 'Step-by-step guided practice and real cases.')}</span>
+            </div>
+            <div>
+              <strong>{say('Certificado', 'Certificate')}</strong>
+              <span>{say('Examen final y diploma con código verificable.', 'Final exam and a verifiable diploma.')}</span>
+            </div>
+            <div>
+              <strong>{say('A tu ritmo', 'At your pace')}</strong>
+              <span>{say('Desde el móvil o el ordenador, cuando quieras.', 'On your phone or computer, whenever you like.')}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {showPremium && !hasAll && (
-        <div className="pass">
+        <section className="home-band">
           <div>
-            <span className="eyebrow">{t('allAccessTitle', locale)}</span>
-            <strong className="pass-price">{formatPrice(ALL_ACCESS_PRICE, locale)}</strong>
+            <p className="eyebrow">{t('allAccessTitle', locale)}</p>
+            <h2>
+              {say('Toda la academia,', 'The whole academy,')} <em>{say('un solo pase.', 'one pass.')}</em>
+            </h2>
             <p>{t('allAccessBody', locale)}</p>
           </div>
-          <button className="primary" onClick={() => onBuy('all')}>
-            {t('buyAll', locale)}
-          </button>
-        </div>
+          <div className="band-price">
+            <strong>{formatPrice(ALL_ACCESS_PRICE, locale)}</strong>
+            <span>{say('Pago único · 12 meses de acceso', 'One payment · 12 months of access')}</span>
+            <button className="primary big" onClick={() => onBuy('all')}>
+              {t('buyAll', locale)}
+            </button>
+          </div>
+        </section>
       )}
-      {showPremium && <div className="grid">{premium.map(card)}</div>}
-      <h2 className={showPremium ? 'section-gap' : undefined}>{t('freeCourses', locale)}</h2>
-      <div className="grid">{free.map(card)}</div>
-    </>
+
+      <section className="home-section" id="cursos-gratis">
+        <header className="section-head">
+          <div>
+            <p className="eyebrow">{say('Para empezar', 'To get started')}</p>
+            <h2>
+              {say('Cursos', 'Free')} <em>{say('gratuitos', 'courses')}</em>
+            </h2>
+          </div>
+        </header>
+        <div className="course-grid">{free.map(card)}</div>
+      </section>
+    </div>
   )
 }
 
