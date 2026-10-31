@@ -23,7 +23,7 @@ function CertificateSheet({ cert, course }: { cert: CertData; course: Course }) 
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(new Date(cert.d))
   return (
     <div className="certificate printable">
-      <div className="cert-logo">💧 Belaura</div>
+      <div className="cert-logo">Belaura</div>
       <p className="cert-kicker">{t('certTitle', locale)}</p>
       <h2 className="cert-name">{cert.n}</h2>
       <p>{t('certBody', locale)}</p>

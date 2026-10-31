@@ -26,3 +26,6 @@
   .adm-tabs { width: 100%; overflow-x: auto; }
   .adm-tabs a { padding: 8px 10px; }
 }
+.adm-done p { margin: 0 0 8px; }
+.adm-password { font-family: ui-monospace, monospace; font-size: 1.1rem; letter-spacing: 0.06em; user-select: all; }
+.adm-head h1 { font-family: var(--serif, Georgia, serif); font-weight: 600; font-size: 2rem; }

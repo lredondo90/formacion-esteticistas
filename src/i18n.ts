@@ -37,14 +37,19 @@ const ui = {
     en: 'Interactive training for estheticians',
   },
   heroTitle: {
-    es: 'Aprende jugando, trabaja con seguridad',
-    en: 'Learn by doing, work with confidence',
+    es: 'Formación profesional en estética, a tu ritmo',
+    la: 'Formación profesional en cosmetología, a tu ritmo',
+    en: 'Professional esthetics training, at your own pace',
   },
   heroBody: {
-    es: 'Lecciones cortas, retos prácticos y casos reales de cabina. Sin vídeos eternos ni teoría aburrida.',
-    la: 'Lecciones cortas, retos prácticos y casos reales de gabinete. Sin videos eternos ni teoría aburrida.',
-    en: 'Bite-sized lessons, hands-on challenges and real treatment-room cases. No endless videos, no boring theory.',
+    es: 'Cursos completos con teoría interactiva, prácticas guiadas y casos reales de cabina, pensados para la práctica profesional.',
+    la: 'Cursos completos con teoría interactiva, prácticas guiadas y casos reales de gabinete, pensados para la práctica profesional.',
+    en: 'Complete courses with interactive theory, guided practice and real treatment-room cases, built for professional practice.',
   },
+  brandTagline: { es: 'Academia de estética', la: 'Academia de cosmetología', en: 'Esthetics academy' },
+  heroPoint1: { es: 'Certificado al aprobar', en: 'Certificate on passing' },
+  heroPoint2: { es: 'Prácticas guiadas paso a paso', en: 'Step-by-step guided practice' },
+  heroPoint3: { es: 'España, Latinoamérica e inglés', en: 'Spain, Latin America and English' },
   courses: { es: 'Cursos', en: 'Courses' },
   start: { es: 'Empezar', en: 'Start' },
   continue: { es: 'Continuar', en: 'Continue' },
@@ -132,8 +137,8 @@ const ui = {
   hotspotDone: { es: '¡Todo localizado! Toca los puntos para repasar.', en: 'All found! Tap the spots to review.' },
   restart: { es: 'Empezar de nuevo', en: 'Start over' },
   footer: {
-    es: 'Belaura · Versión de demostración',
-    en: 'Belaura · Demo version',
+    es: 'Formación profesional para esteticistas',
+    en: 'Professional training for estheticians',
   },
 } satisfies Record<string, Text>
 
