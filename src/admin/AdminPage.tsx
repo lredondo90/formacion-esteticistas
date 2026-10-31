@@ -228,11 +228,16 @@ function UsersPanel({ isOwner }: { isOwner: boolean }) {
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState<UserRow | null>(null)
+  const [creating, setCreating] = useState(false)
   const users = useLoad(() => call<UserRow[]>('admin_list_users', { p_search: query || null, p_limit: 200 }), [query], [] as UserRow[])
 
   return (
     <section className="mgr-panel">
-      <SectionHead title="Usuarias" text="Toca una para ver y cambiar a qué cursos tiene acceso." />
+      <SectionHead title="Usuarias" text="Toca una para ver y cambiar a qué cursos tiene acceso.">
+        <button className="mgr-primary" onClick={() => setCreating(true)}>
+          + Dar de alta
+        </button>
+      </SectionHead>
       <form
         className="adm-search"
         onSubmit={(e) => {
@@ -283,6 +288,7 @@ function UsersPanel({ isOwner }: { isOwner: boolean }) {
           ))}
         </div>
       )}
+      {creating && <NewUser onClose={() => setCreating(false)} onCreated={() => users.reload()} />}
       {open && (
         <UserDetail
           user={open}
@@ -292,6 +298,126 @@ function UsersPanel({ isOwner }: { isOwner: boolean }) {
         />
       )}
     </section>
+  )
+}
+
+const CREATE_ERRORS: Record<string, string> = {
+  invalid_email: 'Revisa el correo electrónico.',
+  weak_password: 'La contraseña debe tener al menos 8 caracteres.',
+  user_exists: 'Ya existe una cuenta con ese correo. Búscala en la lista para darle acceso.',
+  forbidden: 'Tu rol no permite dar de alta usuarias.',
+  login_required: 'Tu sesión ha caducado. Vuelve a entrar.',
+  not_configured: 'Falta configurar SUPABASE_SERVICE_ROLE_KEY en Vercel.',
+}
+
+function NewUser({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [password, setPassword] = useState('')
+  const [product, setProduct] = useState('')
+  const [duration, setDuration] = useState('forever')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [done, setDone] = useState<{ email: string; password?: string } | null>(null)
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      const { data } = await supabase.auth.getSession()
+      const res = await fetch('/api/admin-users', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${data.session?.access_token ?? ''}` },
+        body: JSON.stringify({
+          email,
+          full_name: name,
+          password: password || undefined,
+          product: product || null,
+          days: duration === 'month' ? 31 : duration === 'year' ? 365 : 0,
+        }),
+      })
+      const out = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; password?: string; warning?: string }
+      if (!res.ok || !out.ok) throw new Error(CREATE_ERRORS[out.error ?? ''] ?? 'No se pudo crear la cuenta.')
+      setDone({ email: email.trim().toLowerCase(), password: out.password })
+      if (out.warning) setError('La cuenta se creó, pero no se pudo dar el acceso. Dáselo desde su ficha.')
+      onCreated()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal title="Dar de alta una usuaria" kicker="NUEVA CUENTA" onClose={onClose}>
+      <Notice text={error} error />
+      {done ? (
+        <div className="adm-done">
+          <p>
+            ✓ Cuenta creada para <strong>{done.email}</strong>.
+          </p>
+          {done.password ? (
+            <>
+              <p>Contraseña temporal (cópiala ahora, no se volverá a mostrar):</p>
+              <p className="mgr-share adm-password">{done.password}</p>
+            </>
+          ) : (
+            <p>Ya puede entrar con la contraseña que has elegido.</p>
+          )}
+          <p className="mgr-footnote">Si su correo es de Gmail, también puede entrar con «Continuar con Google». Puede cambiar la contraseña con «He olvidado mi contraseña».</p>
+          <div className="mgr-form-actions">
+            <button className="mgr-primary" onClick={onClose}>
+              Listo
+            </button>
+          </div>
+        </div>
+      ) : (
+        <form className="mgr-form" onSubmit={(e) => void submit(e)}>
+          <label>
+            Correo electrónico
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nombre@ejemplo.com" />
+          </label>
+          <label>
+            Nombre
+            <input value={name} maxLength={140} onChange={(e) => setName(e.target.value)} placeholder="Opcional" />
+          </label>
+          <label>
+            Contraseña
+            <input value={password} minLength={8} onChange={(e) => setPassword(e.target.value)} placeholder="Déjala vacía y se genera una temporal" />
+          </label>
+          <label>
+            Acceso inicial
+            <select value={product} onChange={(e) => setProduct(e.target.value)}>
+              <option value="">Solo cursos gratis</option>
+              {PRODUCTS.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {product && (
+            <label>
+              Duración del acceso
+              <select value={duration} onChange={(e) => setDuration(e.target.value)}>
+                <option value="forever">Para siempre</option>
+                <option value="month">1 mes</option>
+                <option value="year">1 año</option>
+              </select>
+            </label>
+          )}
+          <div className="mgr-form-actions">
+            <button type="button" className="mgr-secondary" onClick={onClose}>
+              Cancelar
+            </button>
+            <button className="mgr-primary" disabled={busy}>
+              {busy ? 'Creando…' : 'Crear cuenta'}
+            </button>
+          </div>
+        </form>
+      )}
+    </Modal>
   )
 }
 

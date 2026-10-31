@@ -9,6 +9,7 @@ import { Exam, Theory } from './theory'
 import { load, save } from './storage'
 import { startCheckout } from './services'
 import { AuthPage } from './AuthPage'
+import { Logo } from './Logo'
 import { accountsEnabled, fetchEntitlements, fetchProgress, mergeCerts, mergeProgress, saveProgress, signOut, useSession, type Entitlements } from './account'
 import { AppContext, today, type AppState, type Plan, type Progress } from './state'
 import type { CertData } from './services'
@@ -284,11 +285,13 @@ export default function App() {
       <div className="app">
         <header className="topbar">
           <button className="brand" onClick={() => state.go('cursos')}>
-            <span className="logo">💧</span> Belaura
+            <Logo size={34} tagline={t('brandTagline', locale)} />
           </button>
           <div className="topbar-right">
-            {currentPlan && <span className="badge">💎 Pro</span>}
-            <span className="points">⭐ {progress.points} {t('points', locale)}</span>
+            {currentPlan && <span className="badge pro">Pro</span>}
+            <span className="points">
+              <strong>{progress.points}</strong> {t('points', locale)}
+            </span>
             {accountsEnabled &&
               (session ? (
                 <button className="ghost account-btn" title={session.user.email} onClick={signOut}>
@@ -314,7 +317,7 @@ export default function App() {
           <nav className="nav">
             {[...NAV, ...(adminRole ? [{ id: 'admin', emoji: '🛡️', label: { es: 'Admin', en: 'Admin' } }] : [])].map((n) => (
               <a key={n.id} href={`#/${n.id}`} className={`nav-item ${page === n.id || (n.id === 'cursos' && !NAV.some((x) => x.id === page)) ? 'active' : ''}`}>
-                <span>{n.emoji}</span> {tr(n.label, locale)}
+                {tr(n.label, locale)}
               </a>
             ))}
           </nav>
@@ -334,7 +337,11 @@ export default function App() {
           />
         )}
 
-        <footer>{t('footer', locale)}</footer>
+        <footer className="site-footer">
+          <Logo size={26} />
+          <span>{t('footer', locale)}</span>
+          <span>© {new Date().getFullYear()} Belaura</span>
+        </footer>
       </div>
     </AppContext.Provider>
   )
@@ -386,12 +393,14 @@ function Catalog({
           ? t('start', locale)
           : t('tryFree', locale)
     return (
-      <article key={c.id} className="card" style={{ '--accent': c.color } as CSSProperties}>
+      <article key={c.id} className="card" style={{ '--tone': c.color } as CSSProperties}>
         <div className="card-top">
-          <div className="card-emoji">{c.emoji}</div>
+          <div className="monogram" aria-hidden="true">
+            {tr(c.title, locale).charAt(0)}
+          </div>
           {c.premium && (
             <span className={`badge ${unlocked ? 'owned' : ''}`}>
-              {unlocked ? `✓ ${t('unlocked', locale)}` : `★ ${t('premium', locale)} · ${formatPrice(c.premium, locale)}`}
+              {unlocked ? t('unlocked', locale) : `${t('premium', locale)} · ${formatPrice(c.premium, locale)}`}
             </span>
           )}
         </div>
@@ -403,7 +412,7 @@ function Catalog({
             ? ` · ${c.modules.length} ${say('módulos', 'modules')} · ${say('examen final', 'final exam')}`
             : available && ` · ${c.steps.length} ${t('steps', locale)}`}
           {c.premium && !unlocked && (c.modules ? ` · ${say('módulo 1 gratis', 'module 1 free')}` : ` · ${c.freeSteps ?? 0} ${t('freeLessons', locale)}`)}
-          {c.certificate && ` · 🎓 ${t('withCertificate', locale)}`}
+          {c.certificate && ` · ${t('withCertificate', locale)}`}
         </p>
         {c.modules && (
           <details className="syllabus">
@@ -447,11 +456,16 @@ function Catalog({
         <p className="eyebrow">{t('tagline', locale)}</p>
         <h1>{t('heroTitle', locale)}</h1>
         <p>{t('heroBody', locale)}</p>
+        <ul className="hero-points">
+          <li>{t('heroPoint1', locale)}</li>
+          <li>{t('heroPoint2', locale)}</li>
+          <li>{t('heroPoint3', locale)}</li>
+        </ul>
       </section>
       {!showPremium && (
         <div className="pass login-teaser">
           <div>
-            <strong>🔐 {t('loginTeaserTitle', locale)}</strong>
+            <strong>{t('loginTeaserTitle', locale)}</strong>
             <p>{t('loginTeaserBody', locale)}</p>
           </div>
           <a className="primary" href="#/entrar">
@@ -468,7 +482,8 @@ function Catalog({
       {showPremium && !hasAll && (
         <div className="pass">
           <div>
-            <strong>🎟️ {t('allAccessTitle', locale)} · {formatPrice(ALL_ACCESS_PRICE, locale)}</strong>
+            <span className="eyebrow">{t('allAccessTitle', locale)}</span>
+            <strong className="pass-price">{formatPrice(ALL_ACCESS_PRICE, locale)}</strong>
             <p>{t('allAccessBody', locale)}</p>
           </div>
           <button className="primary" onClick={() => onBuy('all')}>

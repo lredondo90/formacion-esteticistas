@@ -3,8 +3,8 @@
   --m-ink: var(--text, #31242c);
   --m-muted: var(--muted, #82737b);
   --m-line: var(--line, #efe3e8);
-  --m-pink: #b64f78;
-  --m-soft: #fff5f8;
+  --m-pink: var(--accent, #7d3c55);
+  --m-soft: var(--soft, #f2ebe4);
   --m-surface: var(--surface, #fff);
   --m-ok: #2e7950;
   --m-ok-bg: #eaf6ef;
@@ -16,7 +16,6 @@
 }
 @media (prefers-color-scheme: dark) {
   .mgr {
-    --m-soft: #2f2229;
     --m-ok-bg: #1f3a2b;
     --m-ok: #8fd3ad;
     --m-warn-bg: #3b301b;
