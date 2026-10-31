@@ -133,7 +133,7 @@ export function ManagerWorkspace({
       <div className="mgr mgr-shell">
         <aside className={`mgr-side ${menuOpen ? 'open' : ''}`}>
           <div className="mgr-side-brand">
-            <span className="mgr-kicker">AULA ESTÉTICA</span>
+            <span className="mgr-kicker">BELAURA</span>
             <strong>{center.name}</strong>
             <small>
               {ROLE_LABEL[role]} · {email}

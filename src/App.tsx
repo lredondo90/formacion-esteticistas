@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { COURSES, type Course, type Step } from './courses'
 import { ALL_ACCESS_PRICE, formatPrice, LOCALES, sayer, t, tr, type Locale } from './i18n'
 import { Branch, Hotspot, VideoLesson } from './interactive'
@@ -22,6 +22,10 @@ import { ProfilePage } from './features/profile'
 import { PlansPage } from './features/plans'
 import { ManagerHome } from './manager/ManagerHome'
 import { ManageBooking, PublicBooking } from './manager/booking/PublicBooking'
+import { supabase } from './lib/supabase'
+import type { PlatformRole } from './admin/AdminPage'
+
+const AdminPage = lazy(() => import('./admin/AdminPage').then((m) => ({ default: m.AdminPage })))
 
 const EMPTY: Progress = { points: 0, courses: {} }
 
@@ -76,6 +80,8 @@ export default function App() {
   const userId = session?.user.id ?? null
   const [remote, setRemote] = useState<Entitlements>({ purchases: [], plan: null })
   const [synced, setSynced] = useState<string | null>(null)
+  // Platform admins (public.platform_admins) get the control panel at #/admin.
+  const [adminRole, setAdminRole] = useState<PlatformRole | null>(null)
 
   useEffect(() => {
     save('locale', locale)
@@ -103,6 +109,14 @@ export default function App() {
       return
     }
     void fetchEntitlements().then(setRemote)
+  }, [userId])
+
+  useEffect(() => {
+    if (!accountsEnabled || !userId) {
+      setAdminRole(null)
+      return
+    }
+    void supabase.rpc('platform_role').then(({ data }) => setAdminRole((data as PlatformRole | null) ?? null))
   }, [userId])
 
   // On sign-in, join this device's progress with the account's; on sign-out, forget it here.
@@ -239,6 +253,20 @@ export default function App() {
   else if (page === 'perfil') content = <ProfilePage />
   else if (page === 'planes') content = <PlansPage />
   else if (page === 'gestor') content = <ManagerHome />
+  else if (page === 'admin')
+    content = !session ? (
+      <AuthPage locale={locale} />
+    ) : adminRole ? (
+      <Suspense fallback={<p className="hint center">…</p>}>
+        <AdminPage role={adminRole} area={route.split(/[/?]/)[1] ?? ''} email={session.user.email ?? ''} />
+      </Suspense>
+    ) : (
+      <div className="panel center">
+        <div className="big-emoji">🔐</div>
+        <h2>Sin acceso</h2>
+        <p>Esta zona es solo para la administración de Belaura.</p>
+      </div>
+    )
   else
     content = (
       <Catalog
@@ -256,7 +284,7 @@ export default function App() {
       <div className="app">
         <header className="topbar">
           <button className="brand" onClick={() => state.go('cursos')}>
-            <span className="logo">💧</span> Aula Estética
+            <span className="logo">💧</span> Belaura
           </button>
           <div className="topbar-right">
             {currentPlan && <span className="badge">💎 Pro</span>}
@@ -284,7 +312,7 @@ export default function App() {
         </header>
         {page !== 'verificar' && (
           <nav className="nav">
-            {NAV.map((n) => (
+            {[...NAV, ...(adminRole ? [{ id: 'admin', emoji: '🛡️', label: { es: 'Admin', en: 'Admin' } }] : [])].map((n) => (
               <a key={n.id} href={`#/${n.id}`} className={`nav-item ${page === n.id || (n.id === 'cursos' && !NAV.some((x) => x.id === page)) ? 'active' : ''}`}>
                 <span>{n.emoji}</span> {tr(n.label, locale)}
               </a>
@@ -292,7 +320,7 @@ export default function App() {
           </nav>
         )}
 
-        <main className={page === 'gestor' ? 'wide' : undefined}>{content}</main>
+        <main className={page === 'gestor' || page === 'admin' ? 'wide' : undefined}>{content}</main>
 
         {checkout && (
           <Checkout

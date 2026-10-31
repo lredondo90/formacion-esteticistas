@@ -92,7 +92,7 @@ function compose(job: Job, appUrl: string) {
       break
     case 'invitation': {
       const role = ROLE[job.payload.role ?? 'professional'] ?? ROLE.professional
-      subject = t(`Te han invitado a ${center} en Aula Estética`, `You're invited to ${center} on Aula Estética`)
+      subject = t(`Te han invitado a ${center} en Belaura`, `You're invited to ${center} on Belaura`)
       lines = [
         t(`Te han invitado a unirte al equipo de ${center} como ${role.es}.`, `You have been invited to join ${center} as ${role.en}.`),
         t('Entra o crea tu cuenta con este mismo correo. La invitación caduca en 7 días.', 'Sign in or sign up with this same email. The invitation expires in 7 days.'),

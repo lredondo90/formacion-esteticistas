@@ -132,8 +132,8 @@ const ui = {
   hotspotDone: { es: '¡Todo localizado! Toca los puntos para repasar.', en: 'All found! Tap the spots to review.' },
   restart: { es: 'Empezar de nuevo', en: 'Start over' },
   footer: {
-    es: 'Aula Estética · Versión de demostración',
-    en: 'Aula Estética · Demo version',
+    es: 'Belaura · Versión de demostración',
+    en: 'Belaura · Demo version',
   },
 } satisfies Record<string, Text>
 

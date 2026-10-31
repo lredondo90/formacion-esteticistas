@@ -3,7 +3,7 @@
 // unlocks paid content. Needs STRIPE_WEBHOOK_SECRET, SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
 // In Stripe → Developers → Webhooks, point an endpoint to https://<your-site>/api/stripe-webhook
 // with the events checkout.session.completed, customer.subscription.updated and
-// customer.subscription.deleted.
+// customer.subscription.deleted, plus invoice.paid so renewals count as income in #/admin.
 import { createHmac, timingSafeEqual } from 'node:crypto'
 
 type CheckoutSession = {
@@ -14,6 +14,19 @@ type CheckoutSession = {
   customer: string | null
   subscription: string | null
   metadata: Record<string, string>
+  amount_total?: number | null
+  currency?: string | null
+}
+
+// Field names vary between Stripe API versions, so both the old and the new place are read.
+type Invoice = {
+  id: string
+  billing_reason?: string | null
+  amount_paid: number
+  currency: string
+  subscription?: string | null
+  subscription_details?: { metadata?: Record<string, string> } | null
+  parent?: { subscription_details?: { subscription?: string; metadata?: Record<string, string> } | null } | null
 }
 
 type Subscription = {
@@ -93,6 +106,45 @@ async function onCheckoutCompleted(session: CheckoutSession): Promise<Response> 
     },
   })
   if (!res.ok) return json({ error: 'db_error', detail: await res.text() }, 500)
+  // Income for the admin panel (#/admin). Idempotent thanks to the unique Stripe reference.
+  const paid = await recordPayment({
+    user_id: userId,
+    product,
+    kind: 'purchase',
+    amount_cents: session.amount_total ?? 0,
+    currency: (session.currency ?? 'eur').toUpperCase(),
+    stripe_ref: session.id,
+  })
+  if (!paid.ok) return json({ error: 'db_error', detail: await paid.text() }, 500)
+  return json({ ok: true })
+}
+
+function recordPayment(row: { user_id: string | null; product: string; kind: 'purchase' | 'renewal'; amount_cents: number; currency: string; stripe_ref: string }) {
+  return rest('academy_payments?on_conflict=stripe_ref', { method: 'POST', prefer: 'resolution=ignore-duplicates,return=minimal', body: row })
+}
+
+// Each monthly or yearly renewal. The first charge is already counted from the checkout session.
+async function onInvoicePaid(invoice: Invoice): Promise<Response> {
+  if (invoice.billing_reason !== 'subscription_cycle' || invoice.amount_paid <= 0) return json({ ignored: 'not_a_renewal' })
+  const subscriptionId = invoice.parent?.subscription_details?.subscription ?? invoice.subscription ?? null
+  const meta = invoice.parent?.subscription_details?.metadata ?? invoice.subscription_details?.metadata ?? {}
+  let userId = meta.user_id ?? null
+  let product = meta.product ?? null
+  if ((!userId || !product) && subscriptionId) {
+    const res = await rest(`academy_entitlements?select=user_id,product&stripe_subscription_id=eq.${encodeURIComponent(subscriptionId)}&limit=1`, { method: 'GET' })
+    const rows = res.ok ? ((await res.json()) as { user_id: string; product: string }[]) : []
+    userId = userId ?? rows[0]?.user_id ?? null
+    product = product ?? rows[0]?.product ?? null
+  }
+  const paid = await recordPayment({
+    user_id: userId,
+    product: product ?? 'subscription',
+    kind: 'renewal',
+    amount_cents: invoice.amount_paid,
+    currency: invoice.currency.toUpperCase(),
+    stripe_ref: invoice.id,
+  })
+  if (!paid.ok) return json({ error: 'db_error', detail: await paid.text() }, 500)
   return json({ ok: true })
 }
 
@@ -122,6 +174,8 @@ export async function POST(request: Request): Promise<Response> {
       return onSubscriptionChanged(event.data.object as Subscription, false)
     case 'customer.subscription.deleted':
       return onSubscriptionChanged(event.data.object as Subscription, true)
+    case 'invoice.paid':
+      return onInvoicePaid(event.data.object as Invoice)
     default:
       return json({ ignored: event.type })
   }

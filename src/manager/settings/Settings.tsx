@@ -55,7 +55,7 @@ export function Settings() {
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
                 const a = document.createElement('a')
                 a.href = URL.createObjectURL(blob)
-                a.download = `aula-estetica-${center.slug}-${todayIn(center.timezone)}.json`
+                a.download = `belaura-${center.slug}-${todayIn(center.timezone)}.json`
                 a.click()
                 URL.revokeObjectURL(a.href)
               }, 'Exportación descargada. Queda registrada en el historial del centro.')

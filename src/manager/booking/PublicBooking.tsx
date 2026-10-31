@@ -410,7 +410,7 @@ function PublicShell({ center, children }: { center?: { name: string; address: s
         )}
       </header>
       <main className="pb-body">{children}</main>
-      <footer className="pb-foot">Reservas con Aula Estética</footer>
+      <footer className="pb-foot">Reservas con Belaura</footer>
     </div>
   )
 }
