@@ -1,4 +1,4 @@
-# Supabase · Aula Estética Manager
+# Supabase · Belaura Manager
 
 ## Migraciones
 Aplícalas en orden en el proyecto de Supabase (SQL editor o `supabase db push`):
@@ -13,6 +13,7 @@ Aplícalas en orden en el proyecto de Supabase (SQL editor o `supabase db push`)
 | `202610290007_function_hardening.sql` | Ajustes de permisos de funciones que pide el asesor de seguridad de Supabase |
 | `202610290008_business_profitability.sql` | Etapa 4: stock solo por movimientos (`record_stock_movement`, coste medio), materiales por servicio que se descuentan al realizar la cita, comisión por profesional, categorías de gasto e informe `business_report` |
 | `202610300009_academy_accounts.sql` | Academia: `academy_entitlements` (lo que ha pagado cada alumna; solo lo escribe el webhook de Stripe) y `academy_progress` (progreso y certificados de cada alumna, para seguir en cualquier dispositivo) |
+| `202610310010_platform_admin.sql` | Panel de administración `#/admin`: `platform_admins` (dueña / solo cursos / solo gestor), `academy_payments` (ingresos que anota el webhook de Stripe) y funciones `admin_*` que comprueban el rol |
 
 ## Reglas que garantiza la base de datos
 - Toda la información pertenece a un centro y RLS impide ver otro centro.
@@ -47,7 +48,17 @@ El gestor tiene el botón «Continuar con Google» (Supabase Auth con flujo PKCE
 Las invitaciones funcionan igual: si te invitan con tu Gmail, entra con Google usando esa misma cuenta.
 
 ## Cobros de la academia (Stripe)
-1. En Stripe crea un producto con precio para cada curso, el pase completo y Aula Pro mensual y anual. Copia cada *Price id* (`price_…`) en Vercel: `STRIPE_PRICE_COURSE_<ID>`, `STRIPE_PRICE_ALL_ACCESS`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`.
+1. En Stripe crea un producto con precio para cada curso, el pase completo y Belaura Pro mensual y anual. Copia cada *Price id* (`price_…`) en Vercel: `STRIPE_PRICE_COURSE_<ID>`, `STRIPE_PRICE_ALL_ACCESS`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`.
 2. En Vercel añade `STRIPE_SECRET_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `APP_URL` (la dirección de la web).
-3. En Stripe → Developers → Webhooks añade el endpoint `https://<tu-web>/api/stripe-webhook` con los eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.updated` y `customer.subscription.deleted`. Copia el *Signing secret* (`whsec_…`) en `STRIPE_WEBHOOK_SECRET`.
+3. En Stripe → Developers → Webhooks añade el endpoint `https://<tu-web>/api/stripe-webhook` con los eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.updated`, `customer.subscription.deleted` e `invoice.paid` (este último para que las renovaciones cuenten como ingresos en el panel). Copia el *Signing secret* (`whsec_…`) en `STRIPE_WEBHOOK_SECRET`.
 4. Prueba primero con las claves de modo prueba (`sk_test_…`) y la tarjeta `4242 4242 4242 4242`.
+
+## Panel de administración (`#/admin`)
+Solo lo ven las cuentas de `platform_admins`. La primera dueña se añade una vez en Supabase → SQL Editor (cambia el correo por el tuyo):
+
+```sql
+insert into public.platform_admins(user_id, role)
+select id, 'owner' from auth.users where email = 'tu-correo@ejemplo.com';
+```
+
+Después, desde el propio panel (apartado *Administradores*) la dueña puede dar acceso a otras personas: *Dueña* (todo), *Solo cursos* o *Solo gestor*.

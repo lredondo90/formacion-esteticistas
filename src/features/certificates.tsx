@@ -23,7 +23,7 @@ function CertificateSheet({ cert, course }: { cert: CertData; course: Course }) 
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(new Date(cert.d))
   return (
     <div className="certificate printable">
-      <div className="cert-logo">💧 Aula Estética</div>
+      <div className="cert-logo">💧 Belaura</div>
       <p className="cert-kicker">{t('certTitle', locale)}</p>
       <h2 className="cert-name">{cert.n}</h2>
       <p>{t('certBody', locale)}</p>
@@ -150,7 +150,7 @@ export function VerifyPage({ payload }: { payload: string }) {
         </>
       )}
       <button className="secondary" onClick={() => go('cursos')}>
-        {s('Conoce Aula Estética', 'Discover Aula Estética')}
+        {s('Conoce Belaura', 'Discover Belaura')}
       </button>
     </div>
   )

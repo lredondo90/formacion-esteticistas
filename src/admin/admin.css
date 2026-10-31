@@ -1,0 +1,28 @@
+/* Belaura · panel de administración (#/admin). Builds on the manager styles (.mgr-*). */
+.adm { display: flex; flex-direction: column; gap: 16px; }
+.adm-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.adm-head h1 { margin: 4px 0 2px; font-size: 1.6rem; }
+.adm-head p { margin: 0; font-size: 0.85rem; }
+.adm-tabs { display: flex; gap: 6px; background: var(--m-surface); border: 1px solid var(--m-line); border-radius: 14px; padding: 4px; }
+.adm-tabs a { padding: 8px 14px; border-radius: 10px; color: var(--m-ink) !important; text-decoration: none; font-weight: 600; font-size: 0.92rem; white-space: nowrap; }
+.adm-tabs a.active { background: var(--m-pink); color: #fff !important; }
+.adm-search { display: flex; gap: 8px; max-width: 520px; margin-bottom: 10px; }
+.adm-search input { flex: 1; }
+.adm-grant { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.adm-grant select, .adm-grant input { width: auto; flex: 1 1 160px; }
+.adm-tag { font-style: normal; font-size: 0.66rem; background: var(--m-soft); color: var(--m-pink); padding: 2px 7px; border-radius: 20px; margin-left: 6px; font-weight: 700; }
+.adm-months { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; height: 170px; align-items: end; }
+.adm-month { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
+.adm-month strong { font-size: 0.68rem; white-space: nowrap; }
+.adm-month span { font-size: 0.75rem; color: var(--m-muted); }
+.adm-month-bar { width: 70%; max-width: 44px; background: var(--m-pink); border-radius: 6px 6px 0 0; }
+.adm-sale-cols { grid-template-columns: 0.8fr 1.4fr 1.4fr 0.6fr; }
+.adm-user-cols { grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.6fr; min-width: 720px; }
+.adm-ent-cols { grid-template-columns: 1.8fr 1fr auto; }
+.adm-center-cols { grid-template-columns: 1.6fr 0.5fr 0.6fr 0.6fr 0.8fr 1.1fr; min-width: 720px; }
+.adm-member-cols { grid-template-columns: 1.8fr 1fr auto; }
+.adm-admin-cols { grid-template-columns: 1.8fr 1fr auto; }
+@media (max-width: 640px) {
+  .adm-tabs { width: 100%; overflow-x: auto; }
+  .adm-tabs a { padding: 8px 10px; }
+}

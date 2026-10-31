@@ -262,7 +262,7 @@ export function ManagerHome() {
     return (
       <section className="mgr mgr-auth">
         <div className="mgr-auth-card">
-          <span className="mgr-kicker">AULA ESTÉTICA · MANAGER</span>
+          <span className="mgr-kicker">BELAURA · MANAGER</span>
           <h1>{authMode === 'login' ? 'Inicia sesión' : 'Crea tu cuenta'}</h1>
           <p>Agenda, clientes, equipo y caja de tu centro en un solo lugar.</p>
           {inviteBanner}
@@ -346,7 +346,7 @@ export function ManagerHome() {
           <h1>Configura tu centro</h1>
           <p>Crearemos tu centro con un horario de ejemplo y tu ficha de profesional. Podrás cambiarlo todo después.</p>
           {authMessage && <p className="mgr-notice" role="status">{authMessage}</p>}
-          <p className="mgr-footnote">¿Trabajas en un centro que ya usa Aula Estética? Pide a la propietaria que te invite con este correo.</p>
+          <p className="mgr-footnote">¿Trabajas en un centro que ya usa Belaura? Pide a la propietaria que te invite con este correo.</p>
           <form onSubmit={createCenter}>
             <label>
               Nombre del centro
@@ -379,7 +379,7 @@ function AuthPanel({ title, message }: { title: string; message: string }) {
   return (
     <section className="mgr mgr-auth">
       <div className="mgr-auth-card">
-        <span className="mgr-kicker">AULA ESTÉTICA · MANAGER</span>
+        <span className="mgr-kicker">BELAURA · MANAGER</span>
         <h1>{title}</h1>
         <p>{message}</p>
       </div>

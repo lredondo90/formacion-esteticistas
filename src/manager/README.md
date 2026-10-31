@@ -1,4 +1,4 @@
-# Aula Estética Manager
+# Belaura Manager
 
 Gestor de centros dentro de la misma app (`#/gestor`). Todo se guarda en Supabase y cada centro solo ve sus datos (RLS). Las operaciones delicadas (citas, cobros, invitaciones) las hace el servidor mediante funciones de la base de datos; el navegador no puede escribir citas ni cobros directamente.
 

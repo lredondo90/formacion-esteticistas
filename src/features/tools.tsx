@@ -93,7 +93,7 @@ function DocView({ doc, locale }: { doc: Doc; locale: Locale }) {
   return (
     <div className="doc printable">
       <div className="doc-head">
-        <span>💧 Aula Estética</span>
+        <span>💧 Belaura</span>
         <span>{s('Centro', 'Salon')}: ____________________</span>
       </div>
       <h2>{tr(doc.title, locale)}</h2>

@@ -9,7 +9,7 @@ type Session = { id: string; title: Text; host: Text; emoji: string; start: Date
 // Upcoming sessions: Tuesdays and Thursdays at 18:00 UTC (19:00 in Spain in winter, 12:00 in Mexico City).
 const TOPICS: Omit<Session, 'id' | 'start'>[] = [
   { emoji: '✒️', title: tx('Masterclass: diseño de cejas en directo', 'Masterclass: live brow mapping'), host: tx('Especialista invitada en micropigmentación', 'Guest micropigmentation specialist'), minutes: 60, pro: true },
-  { emoji: '❓', title: tx('Dudas abiertas: tu primer año como esteticista', 'Open Q&A: your first year as an esthetician'), host: tx('Equipo docente de Aula Estética', 'Aula Estética teaching team'), minutes: 45, pro: false },
+  { emoji: '❓', title: tx('Dudas abiertas: tu primer año como esteticista', 'Open Q&A: your first year as an esthetician'), host: tx('Equipo docente de Belaura', 'Belaura teaching team'), minutes: 45, pro: false },
   { emoji: '👁️', title: tx('Volumen ruso paso a paso', 'Russian volume step by step'), host: tx('Lash artist invitada', 'Guest lash artist'), minutes: 60, pro: true },
   { emoji: '📈', title: tx('Instagram que llena la agenda', 'Instagram that fills your diary'), host: tx('Experta en marketing para centros', 'Salon marketing expert'), minutes: 45, pro: true },
   { emoji: '🧪', title: tx('Peelings: cómo elegir el ácido', 'Peels: choosing the right acid'), host: tx('Cosmetóloga invitada', 'Guest cosmetic scientist'), minutes: 60, pro: true },
@@ -37,9 +37,9 @@ function icsFile(session: Session, title: string, host: string) {
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Aula Estetica//ES',
+    'PRODID:-//Belaura//ES',
     'BEGIN:VEVENT',
-    `UID:${session.id}@aula-estetica`,
+    `UID:${session.id}@belaura`,
     `DTSTAMP:${fmt(new Date())}`,
     `DTSTART:${fmt(session.start)}`,
     `DTEND:${fmt(end)}`,
@@ -50,7 +50,7 @@ function icsFile(session: Session, title: string, host: string) {
   ].join('\r\n')
   const a = document.createElement('a')
   a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
-  a.download = 'aula-estetica.ics'
+  a.download = 'belaura.ics'
   a.click()
 }
 

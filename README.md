@@ -1,4 +1,4 @@
-# Aula Estética
+# Belaura
 
 Aplicación web de formación interactiva para esteticistas, en tres versiones de idioma:
 
